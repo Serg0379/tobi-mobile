@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TOBI Mobile</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(180deg, #f7fbff, #eef5ff);
+      color: #111827;
+    }
+
+    .app {
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+      padding: 28px 18px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .logo {
+      font-size: 44px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      background: linear-gradient(90deg, #2563eb, #a855f7);
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .subtitle {
+      font-size: 16px;
+      color: #64748b;
+      margin-top: 4px;
+    }
+
+    .bot {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #dbeafe, #ede9fe);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      box-shadow: 0 8px 24px rgba(59,130,246,.2);
+    }
+
+    .answer {
+      background: rgba(255,255,255,.9);
+      border: 1px solid #dbeafe;
+      border-radius: 26px;
+      padding: 22px;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, .08);
+      min-height: 260px;
+      margin-bottom: 22px;
+    }
+
+    .label {
+      display: inline-block;
+      background: #eff6ff;
+      color: #2563eb;
+      padding: 6px 12px;
+      border-radius: 10px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    #answerText {
+      font-size: 18px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    .inputBox {
+      background: rgba(255,255,255,.9);
+      border-radius: 24px;
+      padding: 16px;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, .06);
+      margin-bottom: 18px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 90px;
+      border: 1px solid #dbeafe;
+      border-radius: 18px;
+      padding: 14px;
+      font-size: 16px;
+      resize: none;
+      outline: none;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    button, .fileLabel {
+      border: 0;
+      border-radius: 18px;
+      padding: 15px 10px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .mic {
+      background: linear-gradient(135deg, #3b82f6, #a855f7);
+      color: white;
+      font-size: 20px;
+    }
+
+    .send {
+      background: #e0f2fe;
+      color: #0369a1;
+    }
+
+    .fileLabel {
+      background: #f3e8ff;
+      color: #7e22ce;
+      display: block;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .small {
+      color: #64748b;
+      font-size: 13px;
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    .stats {
+      background: linear-gradient(135deg, #ecfeff, #f5f3ff);
+      border-radius: 22px;
+      padding: 18px;
+      border: 1px solid #dbeafe;
+    }
+
+    .stats h3 {
+      margin: 0 0 12px;
+    }
+
+    .bar {
+      height: 10px;
+      background: #dbeafe;
+      border-radius: 20px;
+      overflow: hidden;
+      margin: 8px 0 14px;
+    }
+
+    .bar div {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #a855f7);
+      width: 65%;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <div>
+        <div class="logo">TOBI</div>
+        <div class="subtitle">Личный помощник</div>
+      </div>
+      <div class="bot">🤖</div>
+    </div>
+
+    <div class="answer">
+      <div class="label">Ответ TOBI</div>
+      <div id="answerText">Сергей, я готов.
+
+Скажи голосом, напиши текстом или прикрепи файл.
+
+Пример:
+«Тоби, подведи итог дня»
+«Разбери ответ пристава»
+«Сделай текст запроса в Сбербанк»</div>
+    </div>
+
+    <div class="inputBox">
+      <textarea id="userText" placeholder="Напиши задачу для TOBI..."></textarea>
+
+      <div class="buttons">
+        <button class="send" onclick="sendText()">Отправить</button>
+        <button class="mic" onclick="startVoice()">🎤</button>
+        <label class="fileLabel">
+          Файл
+          <input type="file" id="fileInput" onchange="handleFile()" />
+        </label>
+      </div>
+
+      <div class="small" id="status">Голос, текст и файл готовы.</div>
+    </div>
+
+    <div class="stats">
+      <h3>Быстрая статистика</h3>
+      <div>Задачи за месяц: 0</div>
+      <div class="bar"><div></div></div>
+      <div>Документы обработаны: 0</div>
+      <div class="bar"><div style="width:35%"></div></div>
+    </div>
+  </div>
+
+  <script>
+    const MAKE_WEBHOOK_URL = "";
+
+    function setAnswer(text) {
+      document.getElementById("answerText").innerText = text;
+    }
+
+    async function sendText() {
+      const text = document.getElementById("userText").value.trim();
+
+      if (!text) {
+        setAnswer("Напиши задачу или скажи её голосом.");
+        return;
+      }
+
+      document.getElementById("status").innerText = "TOBI думает...";
+
+      if (!MAKE_WEBHOOK_URL) {
+        demoAnswer(text);
+        document.getElementById("status").innerText = "Демо-режим. Автоматизация ещё не подключена.";
+        return;
+      }
+
+      try {
+        const res = await fetch(MAKE_WEBHOOK_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: "text", text })
+        });
+
+        const data = await res.json();
+        setAnswer(data.answer || "Ответ получен, но поле answer пустое.");
+        document.getElementById("status").innerText = "Готово.";
+      } catch (e) {
+        setAnswer("Ошибка отправки в автоматизацию. Нужно проверить Make webhook.");
+        document.getElementById("status").innerText = "Ошибка.";
+      }
+    }
+
+    function demoAnswer(text) {
+      const lower = text.toLowerCase();
+
+      if (lower.includes("итог")) {
+        setAnswer(`ИТОГ ДНЯ
+
+1. Сделано:
+- Создан первый экран TOBI Mobile.
+- Запущена структура помощника.
+
+2. Не сделано:
+- Автоматизация Make/OpenAI ещё не подключена.
+
+3. Следующий шаг:
+- Подключить webhook и реальный ИИ-ответ.`);
+        return;
+      }
+
+      if (lower.includes("сбер") || lower.includes("фссп") || lower.includes("пристав")) {
+        setAnswer(`ФССП / СБЕРБАНК
+
+Главный вывод:
+Сейчас ждём ответ Сбербанка.
+
+Контрольная дата:
+20.06.2026
+
+Следующий шаг:
+Если Сбербанк не ответит — готовить повторное обращение.
+Если ответ отрицательный — писать запрос в ПСБ.`);
+        return;
+      }
+
+      setAnswer(`Я понял задачу:
+
+${text}
+
+Сейчас это демо-режим.
+Следующий шаг — подключить Make + OpenAI API, чтобы TOBI отвечал настоящим анализом.`);
+    }
+
+    function startVoice() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+      if (!SpeechRecognition) {
+        setAnswer("Голосовой ввод не поддерживается этим браузером. Открой через Chrome.");
+        return;
+      }
+
+      const recognition = new SpeechRecognition();
+      recognition.lang = "ru-RU";
+      recognition.interimResults = false;
+
+      document.getElementById("status").innerText = "Говори...";
+
+      recognition.start();
+
+      recognition.onresult = function(event) {
+        const text = event.results[0][0].transcript;
+        document.getElementById("userText").value = text;
+        document.getElementById("status").innerText = "Голос распознан.";
+        sendText();
+      };
+
+      recognition.onerror = function() {
+        document.getElementById("status").innerText = "Ошибка голосового ввода.";
+      };
+    }
+
+    function handleFile() {
+      const file = document.getElementById("fileInput").files[0];
+
+      if (!file) return;
+
+      setAnswer(`Файл принят:
+
+${file.name}
+
+На этом этапе файл только выбран.
+Следующий шаг — подключить автоматизацию, чтобы TOBI мог отправлять файл на анализ.`);
+    }
+  </script>
+</body>
+</html>
