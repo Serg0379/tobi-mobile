@@ -224,6 +224,29 @@
       document.getElementById("answerText").innerText = text;
     }
 
+    function cleanAnswer(value) {
+      if (!value) return "";
+
+      let text = String(value).trim();
+
+      try {
+        const parsed = JSON.parse(text);
+        if (parsed.answer) return cleanAnswer(parsed.answer);
+        if (parsed.response) return cleanAnswer(parsed.response);
+        if (parsed.text) return cleanAnswer(parsed.text);
+      } catch (e) {}
+
+      text = text
+        .replace(/^\{"answer":"?/i, "")
+        .replace(/^\{"response":"?/i, "")
+        .replace(/^\{"text":"?/i, "")
+        .replace(/"\}$/i, "")
+        .replace(/\\"/g, '"')
+        .replace(/\\n/g, "\n");
+
+      return text.trim();
+    }
+
     async function sendText() {
       const text = document.getElementById("userText").value.trim();
 
@@ -249,24 +272,18 @@
           return;
         }
 
-        let data;
+        let answer = "";
 
         try {
-          data = JSON.parse(raw);
+          const data = JSON.parse(raw);
+          answer = data.answer || data.response || data.text || raw;
         } catch (e) {
-          setAnswer(raw || "Make вернул пустой ответ.");
-          document.getElementById("status").innerText = "Готово.";
-          return;
+          answer = raw;
         }
 
-        setAnswer(
-          data.answer ||
-          data.response ||
-          data.text ||
-          "Ответ получен, но нужное поле пустое."
-        );
-
+        setAnswer(cleanAnswer(answer) || "Ответ получен, но текст пустой.");
         document.getElementById("status").innerText = "Готово.";
+
       } catch (e) {
         setAnswer("Ошибка соединения с Make webhook: " + e.message);
         document.getElementById("status").innerText = "Ошибка.";
