@@ -201,7 +201,12 @@
         <button class="mic" onclick="startVoice()">🎤</button>
         <label class="fileLabel">
           Файл
-          <input type="file" id="fileInput" onchange="handleFile()" />
+          <input 
+            type="file" 
+            id="fileInput" 
+            accept=".txt,.pdf,.doc,.docx,.jpg,.jpeg,.png"
+            onchange="handleFile()" 
+          />
         </label>
       </div>
 
@@ -318,17 +323,84 @@
       };
     }
 
-    function handleFile() {
+    async function handleFile() {
       const file = document.getElementById("fileInput").files[0];
+      const userText = document.getElementById("userText").value.trim();
 
       if (!file) return;
+
+      const maxSize = 7 * 1024 * 1024;
+
+      if (file.size > maxSize) {
+        setAnswer(`Файл слишком большой:
+
+${file.name}
+
+Размер файла больше 7 МБ.
+Пока загружайте файл меньше 7 МБ.`);
+        document.getElementById("status").innerText = "Файл слишком большой.";
+        return;
+      }
+
+      document.getElementById("status").innerText = "TOBI загружает файл...";
 
       setAnswer(`Файл принят:
 
 ${file.name}
 
-На этом этапе файл только выбран.
-Следующий шаг — подключить автоматизацию, чтобы TOBI мог отправлять файл на анализ.`);
+TOBI отправляет его на анализ...`);
+
+      const reader = new FileReader();
+
+      reader.onload = async function(event) {
+        const fileData = event.target.result;
+
+        try {
+          const res = await fetch(MAKE_WEBHOOK_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              type: "file",
+              text: userText || "Проанализируй этот файл и дай краткий понятный вывод.",
+              fileName: file.name,
+              fileType: file.type || "unknown",
+              fileSize: file.size,
+              fileData: fileData
+            })
+          });
+
+          const raw = await res.text();
+
+          if (!res.ok) {
+            setAnswer("Ошибка Make при отправке файла. Статус: " + res.status + "\n\n" + raw);
+            document.getElementById("status").innerText = "Ошибка файла.";
+            return;
+          }
+
+          let answer = "";
+
+          try {
+            const data = JSON.parse(raw);
+            answer = data.answer || data.response || data.text || raw;
+          } catch (e) {
+            answer = raw;
+          }
+
+          setAnswer(cleanAnswer(answer) || "Файл отправлен, но ответ пустой.");
+          document.getElementById("status").innerText = "Файл обработан.";
+
+        } catch (e) {
+          setAnswer("Ошибка соединения с Make при отправке файла: " + e.message);
+          document.getElementById("status").innerText = "Ошибка файла.";
+        }
+      };
+
+      reader.onerror = function() {
+        setAnswer("Не удалось прочитать файл. Попробуйте другой файл.");
+        document.getElementById("status").innerText = "Ошибка чтения файла.";
+      };
+
+      reader.readAsDataURL(file);
     }
   </script>
 </body>
