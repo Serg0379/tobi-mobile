@@ -1,454 +1,789 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>TOBI Mobile</title>
-  <style>
-    * { box-sizing: border-box; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TOBI Mobile</title>
 
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(180deg, #f7fbff, #eef5ff);
-      color: #111827;
-    }
+<style>
 
-    .app {
-      max-width: 480px;
-      margin: 0 auto;
-      min-height: 100vh;
-      padding: 28px 18px;
-    }
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
 
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 24px;
-    }
+:root{
+--bg1:#edf4fb;
+--bg2:#d8e7f6;
+--bg3:#b7d2ee;
+--glass:rgba(255,255,255,.35);
+--border:rgba(255,255,255,.4);
+--text:#111827;
+--muted:#64748b;
+--blue:#4b7cff;
+--blue2:#6fa7ff;
+}
 
-    .logo {
-      font-size: 44px;
-      font-weight: 800;
-      letter-spacing: 2px;
-      background: linear-gradient(90deg, #2563eb, #a855f7);
-      -webkit-background-clip: text;
-      color: transparent;
-    }
+body{
+font-family:Arial,sans-serif;
+color:var(--text);
+min-height:100vh;
+background:
+radial-gradient(circle at 15% 20%,rgba(255,255,255,.8),transparent 25%),
+radial-gradient(circle at 80% 15%,rgba(111,167,255,.4),transparent 30%),
+linear-gradient(180deg,var(--bg1),var(--bg2),var(--bg3));
+overflow:hidden;
+}
 
-    .subtitle {
-      font-size: 16px;
-      color: #64748b;
-      margin-top: 4px;
-    }
+body::before{
+content:"";
+position:fixed;
+inset:0;
+background:
+repeating-linear-gradient(
+90deg,
+rgba(255,255,255,.08) 0px,
+rgba(255,255,255,.08) 1px,
+transparent 1px,
+transparent 80px
+),
+repeating-linear-gradient(
+0deg,
+rgba(255,255,255,.05) 0px,
+rgba(255,255,255,.05) 1px,
+transparent 1px,
+transparent 80px
+);
+pointer-events:none;
+}
 
-    .bot {
-      width: 58px;
-      height: 58px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #dbeafe, #ede9fe);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 30px;
-      box-shadow: 0 8px 24px rgba(59,130,246,.2);
-    }
+.app{
+max-width:480px;
+margin:0 auto;
+min-height:100vh;
+padding:18px 14px 110px;
+display:flex;
+flex-direction:column;
+}
 
-    .answer {
-      background: rgba(255,255,255,.9);
-      border: 1px solid #dbeafe;
-      border-radius: 26px;
-      padding: 22px;
-      box-shadow: 0 12px 30px rgba(15, 23, 42, .08);
-      min-height: 260px;
-      margin-bottom: 22px;
-    }
+.top{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:16px;
+}
 
-    .label {
-      display: inline-block;
-      background: #eff6ff;
-      color: #2563eb;
-      padding: 6px 12px;
-      border-radius: 10px;
-      font-weight: 700;
-      margin-bottom: 16px;
-    }
+.logoBlock{
+display:flex;
+align-items:center;
+gap:12px;
+}
 
-    #answerText {
-      font-size: 18px;
-      line-height: 1.5;
-      white-space: pre-wrap;
-    }
+.logoIcon{
+width:50px;
+height:50px;
+border-radius:18px;
+background:rgba(255,255,255,.5);
+backdrop-filter:blur(20px);
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:24px;
+font-weight:900;
+box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
 
-    .inputBox {
-      background: rgba(255,255,255,.9);
-      border-radius: 24px;
-      padding: 16px;
-      box-shadow: 0 10px 24px rgba(15, 23, 42, .06);
-      margin-bottom: 18px;
-    }
+.logoTitle{
+font-size:22px;
+font-weight:800;
+}
 
-    textarea {
-      width: 100%;
-      min-height: 90px;
-      border: 1px solid #dbeafe;
-      border-radius: 18px;
-      padding: 14px;
-      font-size: 16px;
-      resize: none;
-      outline: none;
-    }
+.logoSub{
+font-size:13px;
+color:var(--muted);
+margin-top:3px;
+}
 
-    .buttons {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 12px;
-      margin-top: 14px;
-    }
+.robot{
+width:56px;
+height:56px;
+border-radius:18px;
+background:rgba(255,255,255,.55);
+backdrop-filter:blur(20px);
+display:flex;
+align-items:center;
+justify-content:center;
+box-shadow:0 10px 25px rgba(0,0,0,.08);
+font-size:30px;
+}
 
-    button, .fileLabel {
-      border: 0;
-      border-radius: 18px;
-      padding: 15px 10px;
-      font-size: 15px;
-      font-weight: 700;
-      cursor: pointer;
-      text-align: center;
-    }
+.chat{
+flex:1;
+overflow-y:auto;
+padding-bottom:20px;
+}
 
-    .mic {
-      background: linear-gradient(135deg, #3b82f6, #a855f7);
-      color: white;
-      font-size: 20px;
-    }
+.message{
+border-radius:26px;
+padding:18px;
+margin-bottom:16px;
+line-height:1.6;
+font-size:16px;
+backdrop-filter:blur(22px);
+box-shadow:0 12px 30px rgba(0,0,0,.08);
+}
 
-    .send {
-      background: #e0f2fe;
-      color: #0369a1;
-    }
+.botMessage{
+width:96%;
+background:rgba(255,255,255,.55);
+border:1px solid var(--border);
+}
 
-    .fileLabel {
-      background: #f3e8ff;
-      color: #7e22ce;
-      display: block;
-    }
+.userMessage{
+width:75%;
+margin-left:auto;
+background:linear-gradient(135deg,var(--blue),var(--blue2));
+color:white;
+}
 
-    input[type="file"] {
-      display: none;
-    }
+.msgHeader{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:12px;
+font-size:14px;
+font-weight:700;
+color:var(--blue);
+}
 
-    .small {
-      color: #64748b;
-      font-size: 13px;
-      margin-top: 10px;
-      text-align: center;
-    }
+.msgTime{
+font-size:12px;
+color:#64748b;
+}
 
-    .stats {
-      background: linear-gradient(135deg, #ecfeff, #f5f3ff);
-      border-radius: 22px;
-      padding: 18px;
-      border: 1px solid #dbeafe;
-    }
+.inputPanel{
+position:fixed;
+left:50%;
+bottom:15px;
+transform:translateX(-50%);
+width:min(450px,calc(100vw - 24px));
+padding:10px;
+border-radius:26px;
+background:rgba(255,255,255,.45);
+backdrop-filter:blur(30px);
+box-shadow:0 15px 35px rgba(0,0,0,.1);
+display:grid;
+grid-template-columns:44px 1fr 44px 44px;
+gap:8px;
+align-items:end;
+z-index:10;
+}
 
-    .stats h3 {
-      margin: 0 0 12px;
-    }
+textarea{
+width:100%;
+min-height:42px;
+max-height:120px;
+border:none;
+outline:none;
+background:transparent;
+resize:none;
+font-size:15px;
+font-family:Arial,sans-serif;
+padding:10px 2px;
+color:#111827;
+}
 
-    .bar {
-      height: 10px;
-      background: #dbeafe;
-      border-radius: 20px;
-      overflow: hidden;
-      margin: 8px 0 14px;
-    }
+textarea::placeholder{
+color:#64748b;
+}
 
-    .bar div {
-      height: 100%;
-      background: linear-gradient(90deg, #3b82f6, #a855f7);
-      width: 65%;
-    }
-  </style>
+button,
+.fileLabel{
+width:44px;
+height:44px;
+border:none;
+border-radius:16px;
+cursor:pointer;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:20px;
+background:rgba(255,255,255,.65);
+box-shadow:0 8px 20px rgba(0,0,0,.08);
+}
+
+.sendBtn{
+background:linear-gradient(135deg,#4b7cff,#699eff);
+color:white;
+}
+
+input[type=file]{
+display:none;
+}
+
+.menuButton{
+position:fixed;
+top:18px;
+left:18px;
+width:42px;
+height:42px;
+border-radius:15px;
+border:none;
+background:rgba(255,255,255,.55);
+backdrop-filter:blur(20px);
+font-size:24px;
+z-index:100;
+}
+
+.status{
+display:none;
+}
+
+</style>
 </head>
 <body>
-  <div class="app">
-    <div class="header">
-      <div>
-        <div class="logo">TOBI</div>
-        <div class="subtitle">Личный помощник</div>
-      </div>
-      <div class="bot">🤖</div>
-    </div>
 
-    <div class="answer">
-      <div class="label">Ответ TOBI</div>
-      <div id="answerText">Сергей, я готов.
+<button class="menuButton" onclick="toggleMenu()">☰</button>
+
+<div class="app">
+
+<div class="top">
+
+<div class="logoBlock">
+
+<div class="logoIcon">
+⌬
+</div>
+
+<div>
+
+<div class="logoTitle">
+TOBI
+</div>
+
+<div class="logoSub">
+Личный помощник
+</div>
+
+</div>
+</div>
+
+<div class="robot">
+🤖
+</div>
+
+</div>
+
+<div class="chat" id="chat">
+
+<div class="message botMessage">
+
+<div class="msgHeader">
+
+<span>
+Ответ TOBI
+</span>
+
+<span class="msgTime" id="timeNow">
+сейчас
+</span>
+
+</div>
+
+<div id="answerText">
+
+Сергей, я готов.
 
 Скажи голосом, напиши текстом или прикрепи TXT-файл.
 
 Пример:
+
 «Тоби, подведи итог дня»
+
 «Разбери ответ пристава»
-«Сделай текст запроса в Сбербанк»</div>
-    </div>
 
-    <div class="inputBox">
-      <textarea id="userText" placeholder="Напиши задачу для TOBI..."></textarea>
+«Сделай текст запроса в Сбербанк»
 
-      <div class="buttons">
-        <button class="send" onclick="sendText()">Отправить</button>
-        <button class="mic" onclick="startVoice()">🎤</button>
-        <label class="fileLabel">
-          Файл
-          <input 
-            type="file" 
-            id="fileInput" 
-            accept=".txt,text/plain"
-            onchange="handleFile()" 
-          />
-        </label>
-      </div>
+</div>
 
-      <div class="small" id="status">Голос, текст и TXT-файл готовы.</div>
-    </div>
+</div>
 
-    <div class="stats">
-      <h3>Быстрая статистика</h3>
-      <div>Задачи за месяц: 0</div>
-      <div class="bar"><div></div></div>
-      <div>Документы обработаны: 0</div>
-      <div class="bar"><div style="width:35%"></div></div>
-    </div>
+</div>
+
+</div>
+
+<div class="inputPanel">
+
+<label class="fileLabel">
+
+📎
+
+<input
+type="file"
+id="fileInput"
+accept=".txt,text/plain"
+onchange="handleFile()"
+/>
+
+</label>
+
+<textarea
+id="userText"
+placeholder="Введите запрос..."
+></textarea>
+
+<button onclick="startVoice()">
+🎙
+</button>
+
+<button
+class="sendBtn"
+onclick="sendText()">
+➤
+</button>
+
+</div>
+
+<div class="status" id="status">
+Готово.
+</div>
+
+
+<div class="menuOverlay" id="menuOverlay">
+
+<div class="menuCard">
+
+<div class="menuTop">
+
+<div>
+
+<div class="menuTitle">
+TOBI Center
+</div>
+
+<div class="menuSub">
+Закрытый центр управления
+</div>
+
+</div>
+
+<button
+class="closeBtn"
+onclick="toggleMenu()">
+
+×
+
+</button>
+
+</div>
+
+
+<div class="menuGrid">
+
+<div class="menuItem">
+
+<div class="menuIcon">
+🧠
+</div>
+
+<div class="menuName">
+Память
+</div>
+
+<div class="menuDesc">
+Факты и правила
+</div>
+
+</div>
+
+
+<div class="menuItem">
+
+<div class="menuIcon">
+📄
+</div>
+
+<div class="menuName">
+Документы
+</div>
+
+<div class="menuDesc">
+TXT PDF DOCX
+</div>
+
+</div>
+
+
+<div class="menuItem">
+
+<div class="menuIcon">
+📅
+</div>
+
+<div class="menuName">
+Планирование
+</div>
+
+<div class="menuDesc">
+Календарь и дела
+</div>
+
+</div>
+
+
+<div class="menuItem">
+
+<div class="menuIcon">
+📊
+</div>
+
+<div class="menuName">
+Аналитика
+</div>
+
+<div class="menuDesc">
+Отчёты и статистика
+</div>
+
+</div>
+
+
+<div class="menuItem">
+
+<div class="menuIcon">
+🗂
+</div>
+
+<div class="menuName">
+Кейсы
+</div>
+
+<div class="menuDesc">
+Активные проекты
+</div>
+
+</div>
+
+
+<div class="menuItem">
+
+<div class="menuIcon">
+⚙️
+</div>
+
+<div class="menuName">
+Настройки
+</div>
+
+<div class="menuDesc">
+Связки и сервисы
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+<script>
+
+const MAKE_WEBHOOK_URL = "https://hook.us2.make.com/ieuyswwsxlrom238xqom6wuun9mgd47i";
+
+function toggleMenu() {
+  const menu = document.getElementById("menuOverlay");
+
+  if (menu.style.display === "flex") {
+    menu.style.display = "none";
+  } else {
+    menu.style.display = "flex";
+  }
+}
+
+function getTime() {
+  const d = new Date();
+
+  return d.toLocaleTimeString(
+    "ru-RU",
+    {
+      hour: "2-digit",
+      minute: "2-digit"
+    }
+  );
+}
+
+document.getElementById(
+  "timeNow"
+).innerText = getTime();
+
+function scrollChat() {
+
+  const chat =
+    document.getElementById("chat");
+
+  chat.scrollTop =
+    chat.scrollHeight;
+
+}
+
+function addUserMessage(text) {
+
+  const chat =
+    document.getElementById("chat");
+
+  const div =
+    document.createElement("div");
+
+  div.className =
+    "message userMessage";
+
+  div.innerText = text;
+
+  chat.appendChild(div);
+
+  scrollChat();
+
+}
+
+function addBotMessage(text) {
+
+  const chat =
+    document.getElementById("chat");
+
+  const div =
+    document.createElement("div");
+
+  div.className =
+    "message botMessage";
+
+  div.innerHTML =
+
+  `
+  <div class="msgHeader">
+
+    <span>
+    Ответ TOBI
+    </span>
+
+    <span class="msgTime">
+    ${getTime()}
+    </span>
+
   </div>
 
-  <script>
-    const MAKE_WEBHOOK_URL = "https://hook.us2.make.com/ieuyswwsxlrom238xqom6wuun9mgd47i";
+  <div>
 
-    function setAnswer(text) {
-      document.getElementById("answerText").innerText = text;
-    }
+  ${String(text).replace(/\n/g,"<br>")}
 
-    function cleanAnswer(value) {
-      if (!value) return "";
+  </div>
 
-      let text = String(value).trim();
+  `;
 
-      try {
-        const parsed = JSON.parse(text);
-        if (parsed.answer) return cleanAnswer(parsed.answer);
-        if (parsed.response) return cleanAnswer(parsed.response);
-        if (parsed.text) return cleanAnswer(parsed.text);
-      } catch (e) {}
+  chat.appendChild(div);
 
-      text = text
-        .replace(/^\{"answer":"?/i, "")
-        .replace(/^\{"response":"?/i, "")
-        .replace(/^\{"text":"?/i, "")
-        .replace(/"\}$/i, "")
-        .replace(/\\"/g, '"')
-        .replace(/\\n/g, "\n");
+  scrollChat();
 
-      return text.trim();
-    }
+}
 
-    async function sendText() {
-      const text = document.getElementById("userText").value.trim();
+function setAnswer(text) {
 
-      if (!text) {
-        setAnswer("Напиши задачу или скажи её голосом.");
-        return;
-      }
+  document.getElementById(
+    "answerText"
+  ).innerText = text;
 
-      document.getElementById("status").innerText = "TOBI думает...";
+}
 
-      try {
-        const res = await fetch(MAKE_WEBHOOK_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type: "text", text: text })
-        });
+function cleanAnswer(value) {
 
-        const raw = await res.text();
+  if (!value) return "";
 
-        if (!res.ok) {
-          setAnswer("Ошибка Make. Статус: " + res.status + "\n\n" + raw);
-          document.getElementById("status").innerText = "Ошибка.";
-          return;
+  let text =
+    String(value).trim();
+
+  try {
+
+    const parsed =
+      JSON.parse(text);
+
+    if (parsed.answer)
+      return cleanAnswer(parsed.answer);
+
+    if (parsed.response)
+      return cleanAnswer(parsed.response);
+
+    if (parsed.text)
+      return cleanAnswer(parsed.text);
+
+  } catch (e) {}
+
+  text = text
+    .replace(/\\n/g,"\n")
+    .replace(/\\"/g,'"');
+
+  return text.trim();
+
+}
+
+async function sendText() {
+
+  const input =
+    document.getElementById(
+      "userText"
+    );
+
+  const text =
+    input.value.trim();
+
+  if (!text) {
+
+    setAnswer(
+      "Напиши задачу."
+    );
+
+    return;
+
+  }
+
+  addUserMessage(text);
+
+  input.value = "";
+
+  document.getElementById(
+    "status"
+  ).innerText =
+    "TOBI думает...";
+
+  try {
+
+    const res =
+      await fetch(
+        MAKE_WEBHOOK_URL,
+        {
+          method:"POST",
+
+          headers:{
+            "Content-Type":
+            "application/json"
+          },
+
+          body:JSON.stringify({
+
+            type:"text",
+
+            text:text
+
+          })
+
         }
+      );
 
-        let answer = "";
+    const raw =
+      await res.text();
 
-        try {
-          const data = JSON.parse(raw);
-          answer = data.answer || data.response || data.text || raw;
-        } catch (e) {
-          answer = raw;
-        }
+    let answer = "";
 
-        setAnswer(cleanAnswer(answer) || "Ответ получен, но текст пустой.");
-        document.getElementById("status").innerText = "Готово.";
+    try {
 
-      } catch (e) {
-        setAnswer("Ошибка соединения с Make webhook: " + e.message);
-        document.getElementById("status").innerText = "Ошибка.";
-      }
+      const data =
+        JSON.parse(raw);
+
+      answer =
+        data.answer ||
+        data.response ||
+        data.text ||
+        raw;
+
     }
 
-    function startVoice() {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    catch(e){
 
-      if (!SpeechRecognition) {
-        setAnswer("Голосовой ввод не поддерживается этим браузером. Открой через Chrome.");
-        return;
-      }
+      answer = raw;
 
-      const recognition = new SpeechRecognition();
-      recognition.lang = "ru-RU";
-      recognition.interimResults = false;
-
-      document.getElementById("status").innerText = "Говори...";
-
-      recognition.start();
-
-      recognition.onresult = function(event) {
-        const text = event.results[0][0].transcript;
-        document.getElementById("userText").value = text;
-        document.getElementById("status").innerText = "Голос распознан.";
-        sendText();
-      };
-
-      recognition.onerror = function() {
-        document.getElementById("status").innerText = "Ошибка голосового ввода.";
-      };
     }
 
-    async function handleFile() {
-      const fileInput = document.getElementById("fileInput");
-      const file = fileInput.files[0];
-      const userText = document.getElementById("userText").value.trim();
+    addBotMessage(
 
-      if (!file) return;
+      cleanAnswer(answer)
 
-      const fileName = file.name || "";
-      const isTxt = fileName.toLowerCase().endsWith(".txt") || file.type === "text/plain";
+    );
 
-      if (!isTxt) {
-        setAnswer(`Сергей, пока я безопасно читаю только TXT-файлы.
+    document.getElementById(
+      "status"
+    ).innerText =
+      "Готово";
 
-Вы выбрали:
-${fileName}
+  }
 
-DOCX, PDF и фото подключим следующим шагом отдельно, чтобы не ломать рабочий TOBI.`);
-        document.getElementById("status").innerText = "Пока доступен TXT.";
-        fileInput.value = "";
-        return;
-      }
+  catch(e){
 
-      const maxSize = 1024 * 1024;
+    addBotMessage(
 
-      if (file.size > maxSize) {
-        setAnswer(`Файл слишком большой:
+      "Ошибка соединения:\n\n"
 
-${fileName}
+      + e.message
 
-Пока загружайте TXT-файл меньше 1 МБ.`);
-        document.getElementById("status").innerText = "Файл слишком большой.";
-        fileInput.value = "";
-        return;
-      }
+    );
 
-      document.getElementById("status").innerText = "TOBI читает TXT-файл...";
+  }
 
-      setAnswer(`Файл принят:
+}
 
-${fileName}
+function startVoice() {
 
-TOBI читает текст внутри файла...`);
+  const SpeechRecognition =
 
-      const reader = new FileReader();
+    window.SpeechRecognition ||
 
-      reader.onload = async function(event) {
-        const fileText = String(event.target.result || "").trim();
+    window.webkitSpeechRecognition;
 
-        if (!fileText) {
-          setAnswer(`Файл прочитан, но внутри нет текста:
+  if (!SpeechRecognition) {
 
-${fileName}`);
-          document.getElementById("status").innerText = "Файл пустой.";
-          fileInput.value = "";
-          return;
-        }
+    addBotMessage(
 
-        const task = userText || "Проанализируй текст из файла и дай короткий понятный вывод.";
+      "Голосовой ввод поддерживается через Chrome."
 
-        const textForTobi = `Пользователь прикрепил TXT-файл.
+    );
 
-Имя файла: ${fileName}
+    return;
 
-Задача пользователя:
-${task}
+  }
 
-Точное содержимое файла между метками:
+  const recognition =
+    new SpeechRecognition();
 
---- НАЧАЛО ФАЙЛА ---
-${fileText}
---- КОНЕЦ ФАЙЛА ---
+  recognition.lang =
+    "ru-RU";
 
-Ответь коротко и по делу.
-Анализируй только текст между метками.
-Не придумывай то, чего нет в тексте.
-Не говори про кодировки, BOM, XML, архивы, форматы и техническое устройство файла.`;
+  recognition.start();
 
-        try {
-          document.getElementById("status").innerText = "TOBI думает...";
+  recognition.onresult =
+    function(event){
 
-          const res = await fetch(MAKE_WEBHOOK_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              type: "text",
-              text: textForTobi
-            })
-          });
+      const text =
+        event.results[0][0].transcript;
 
-          const raw = await res.text();
+      document.getElementById(
+        "userText"
+      ).value = text;
 
-          if (!res.ok) {
-            setAnswer("Ошибка Make при отправке текста из файла. Статус: " + res.status + "\n\n" + raw);
-            document.getElementById("status").innerText = "Ошибка файла.";
-            fileInput.value = "";
-            return;
-          }
+      sendText();
 
-          let answer = "";
+    };
 
-          try {
-            const data = JSON.parse(raw);
-            answer = data.answer || data.response || data.text || raw;
-          } catch (e) {
-            answer = raw;
-          }
+}
 
-          setAnswer(cleanAnswer(answer) || "Файл отправлен, но ответ пустой.");
-          document.getElementById("status").innerText = "Файл обработан.";
-          fileInput.value = "";
+function handleFile(){
 
-        } catch (e) {
-          setAnswer("Ошибка соединения с Make при отправке файла: " + e.message);
-          document.getElementById("status").innerText = "Ошибка файла.";
-          fileInput.value = "";
-        }
-      };
+  addBotMessage(
 
-      reader.onerror = function() {
-        setAnswer("Не удалось прочитать TXT-файл. Попробуйте другой файл.");
-        document.getElementById("status").innerText = "Ошибка чтения файла.";
-        fileInput.value = "";
-      };
+    "TXT-файлы подключены.\n\nPDF и DOCX подключим следующим шагом."
 
-      reader.readAsText(file, "UTF-8");
-    }
-  </script>
+  );
+
+}
+
+</script>
+
 </body>
 </html>
