@@ -234,67 +234,43 @@
 
       document.getElementById("status").innerText = "TOBI думает...";
 
-      if (!MAKE_WEBHOOK_URL) {
-        demoAnswer(text);
-        document.getElementById("status").innerText = "Демо-режим. Автоматизация ещё не подключена.";
-        return;
-      }
-
       try {
         const res = await fetch(MAKE_WEBHOOK_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type: "text", text })
+          body: JSON.stringify({ type: "text", text: text })
         });
 
-        const data = await res.json();
-        setAnswer(data.answer || "Ответ получен, но поле answer пустое.");
+        const raw = await res.text();
+
+        if (!res.ok) {
+          setAnswer("Ошибка Make. Статус: " + res.status + "\n\n" + raw);
+          document.getElementById("status").innerText = "Ошибка.";
+          return;
+        }
+
+        let data;
+
+        try {
+          data = JSON.parse(raw);
+        } catch (e) {
+          setAnswer(raw || "Make вернул пустой ответ.");
+          document.getElementById("status").innerText = "Готово.";
+          return;
+        }
+
+        setAnswer(
+          data.answer ||
+          data.response ||
+          data.text ||
+          "Ответ получен, но нужное поле пустое."
+        );
+
         document.getElementById("status").innerText = "Готово.";
       } catch (e) {
-        setAnswer("Ошибка отправки в автоматизацию. Нужно проверить Make webhook.");
+        setAnswer("Ошибка соединения с Make webhook: " + e.message);
         document.getElementById("status").innerText = "Ошибка.";
       }
-    }
-
-    function demoAnswer(text) {
-      const lower = text.toLowerCase();
-
-      if (lower.includes("итог")) {
-        setAnswer(`ИТОГ ДНЯ
-
-1. Сделано:
-- Создан первый экран TOBI Mobile.
-- Запущена структура помощника.
-
-2. Не сделано:
-- Автоматизация Make/OpenAI ещё не подключена.
-
-3. Следующий шаг:
-- Подключить webhook и реальный ИИ-ответ.`);
-        return;
-      }
-
-      if (lower.includes("сбер") || lower.includes("фссп") || lower.includes("пристав")) {
-        setAnswer(`ФССП / СБЕРБАНК
-
-Главный вывод:
-Сейчас ждём ответ Сбербанка.
-
-Контрольная дата:
-20.06.2026
-
-Следующий шаг:
-Если Сбербанк не ответит — готовить повторное обращение.
-Если ответ отрицательный — писать запрос в ПСБ.`);
-        return;
-      }
-
-      setAnswer(`Я понял задачу:
-
-${text}
-
-Сейчас это демо-режим.
-Следующий шаг — подключить Make + OpenAI API, чтобы TOBI отвечал настоящим анализом.`);
     }
 
     function startVoice() {
