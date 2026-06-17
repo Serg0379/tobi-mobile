@@ -185,7 +185,7 @@
       <div class="label">Ответ TOBI</div>
       <div id="answerText">Сергей, я готов.
 
-Скажи голосом, напиши текстом или прикрепи файл.
+Скажи голосом, напиши текстом или прикрепи TXT-файл.
 
 Пример:
 «Тоби, подведи итог дня»
@@ -204,13 +204,13 @@
           <input 
             type="file" 
             id="fileInput" 
-            accept=".txt,.pdf,.doc,.docx,.jpg,.jpeg,.png"
+            accept=".txt,text/plain"
             onchange="handleFile()" 
           />
         </label>
       </div>
 
-      <div class="small" id="status">Голос, текст и файл готовы.</div>
+      <div class="small" id="status">Голос, текст и TXT-файл готовы.</div>
     </div>
 
     <div class="stats">
@@ -324,56 +324,100 @@
     }
 
     async function handleFile() {
-      const file = document.getElementById("fileInput").files[0];
+      const fileInput = document.getElementById("fileInput");
+      const file = fileInput.files[0];
       const userText = document.getElementById("userText").value.trim();
 
       if (!file) return;
 
-      const maxSize = 7 * 1024 * 1024;
+      const fileName = file.name || "";
+      const isTxt = fileName.toLowerCase().endsWith(".txt") || file.type === "text/plain";
+
+      if (!isTxt) {
+        setAnswer(`Сергей, пока я безопасно читаю только TXT-файлы.
+
+Вы выбрали:
+${fileName}
+
+DOCX, PDF и фото подключим следующим шагом отдельно, чтобы не ломать рабочий TOBI.`);
+        document.getElementById("status").innerText = "Пока доступен TXT.";
+        fileInput.value = "";
+        return;
+      }
+
+      const maxSize = 1024 * 1024;
 
       if (file.size > maxSize) {
         setAnswer(`Файл слишком большой:
 
-${file.name}
+${fileName}
 
-Размер файла больше 7 МБ.
-Пока загружайте файл меньше 7 МБ.`);
+Пока загружайте TXT-файл меньше 1 МБ.`);
         document.getElementById("status").innerText = "Файл слишком большой.";
+        fileInput.value = "";
         return;
       }
 
-      document.getElementById("status").innerText = "TOBI загружает файл...";
+      document.getElementById("status").innerText = "TOBI читает TXT-файл...";
 
       setAnswer(`Файл принят:
 
-${file.name}
+${fileName}
 
-TOBI отправляет его на анализ...`);
+TOBI читает текст внутри файла...`);
 
       const reader = new FileReader();
 
       reader.onload = async function(event) {
-        const fileData = event.target.result;
+        const fileText = String(event.target.result || "").trim();
+
+        if (!fileText) {
+          setAnswer(`Файл прочитан, но внутри нет текста:
+
+${fileName}`);
+          document.getElementById("status").innerText = "Файл пустой.";
+          fileInput.value = "";
+          return;
+        }
+
+        const task = userText || "Проанализируй текст из файла и дай короткий понятный вывод.";
+
+        const textForTobi = `Пользователь прикрепил TXT-файл.
+
+Имя файла: ${fileName}
+
+Задача пользователя:
+${task}
+
+Точное содержимое файла между метками:
+
+--- НАЧАЛО ФАЙЛА ---
+${fileText}
+--- КОНЕЦ ФАЙЛА ---
+
+Ответь коротко и по делу.
+Анализируй только текст между метками.
+Не придумывай то, чего нет в тексте.
+Не говори про кодировки, BOM, XML, архивы, форматы и техническое устройство файла.`;
 
         try {
+          document.getElementById("status").innerText = "TOBI думает...";
+
           const res = await fetch(MAKE_WEBHOOK_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              type: "file",
-              text: userText || "Проанализируй этот файл и дай краткий понятный вывод.",
-              fileName: file.name,
-              fileType: file.type || "unknown",
-              fileSize: file.size,
-              fileData: fileData
+              type: "text",
+              text: textForTobi
             })
           });
 
           const raw = await res.text();
 
           if (!res.ok) {
-            setAnswer("Ошибка Make при отправке файла. Статус: " + res.status + "\n\n" + raw);
+            setAnswer("Ошибка Make при отправке текста из файла. Статус: " + res.status + "\n\n" + raw);
             document.getElementById("status").innerText = "Ошибка файла.";
+            fileInput.value = "";
             return;
           }
 
@@ -388,19 +432,22 @@ TOBI отправляет его на анализ...`);
 
           setAnswer(cleanAnswer(answer) || "Файл отправлен, но ответ пустой.");
           document.getElementById("status").innerText = "Файл обработан.";
+          fileInput.value = "";
 
         } catch (e) {
           setAnswer("Ошибка соединения с Make при отправке файла: " + e.message);
           document.getElementById("status").innerText = "Ошибка файла.";
+          fileInput.value = "";
         }
       };
 
       reader.onerror = function() {
-        setAnswer("Не удалось прочитать файл. Попробуйте другой файл.");
+        setAnswer("Не удалось прочитать TXT-файл. Попробуйте другой файл.");
         document.getElementById("status").innerText = "Ошибка чтения файла.";
+        fileInput.value = "";
       };
 
-      reader.readAsDataURL(file);
+      reader.readAsText(file, "UTF-8");
     }
   </script>
 </body>
