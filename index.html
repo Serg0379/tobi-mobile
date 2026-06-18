@@ -24,6 +24,7 @@
 }
 
 html,body{
+  height:100%;
   min-height:100%;
 }
 
@@ -34,8 +35,7 @@ body{
     radial-gradient(circle at 15% 20%,rgba(255,255,255,.8),transparent 25%),
     radial-gradient(circle at 80% 15%,rgba(111,167,255,.4),transparent 30%),
     linear-gradient(180deg,var(--bg1),var(--bg2),var(--bg3));
-  overflow-y:auto;
-  overflow-x:hidden;
+  overflow:hidden;
 }
 
 body::before{
@@ -94,13 +94,21 @@ body::before{
 .app{
   max-width:480px;
   margin:0 auto;
+  height:100vh;
   min-height:100vh;
   padding:112px 14px 125px;
+  display:flex;
+  flex-direction:column;
 }
 
 .chat{
   width:100%;
+  flex:1;
+  overflow-y:auto;
+  overflow-x:hidden;
   scroll-behavior:smooth;
+  padding-bottom:10px;
+  -webkit-overflow-scrolling:touch;
 }
 
 .message{
@@ -112,17 +120,20 @@ body::before{
   backdrop-filter:blur(22px);
   box-shadow:0 12px 30px rgba(0,0,0,.08);
   word-wrap:break-word;
+  overflow-wrap:anywhere;
   white-space:pre-wrap;
 }
 
 .botMessage{
   width:96%;
+  max-width:96%;
   background:rgba(255,255,255,.58);
   border:1px solid var(--border);
 }
 
 .userMessage{
   width:75%;
+  max-width:75%;
   margin-left:auto;
   background:linear-gradient(135deg,var(--blue),var(--blue2));
   color:white;
@@ -303,22 +314,7 @@ input[type=file]{
 </div>
 
 <div class="app">
-  <div class="chat" id="chat">
-    <div class="message botMessage">
-      <div class="msgHeader">
-        <span>Ответ TOBI</span>
-        <span class="msgTime" id="timeNow">сейчас</span>
-      </div>
-      <div id="answerText">Сергей, я готов.
-
-Скажи голосом, напиши текстом или прикрепи TXT-файл.
-
-Пример:
-«Тоби, подведи итог дня»
-«Разбери ответ пристава»
-«Сделай текст запроса в Сбербанк»</div>
-    </div>
-  </div>
+  <div class="chat" id="chat"></div>
 </div>
 
 <div class="inputPanel">
@@ -387,17 +383,39 @@ input[type=file]{
 
 <script>
 const MAKE_WEBHOOK_URL = "https://hook.us2.make.com/ieuyswwsxlrom238xqom6wuun9mgd47i";
+const TOBI_STORAGE_KEY = "tobi_chat_history_v1";
+
+const START_MESSAGE = `Сергей, я готов.
+
+Скажи голосом, напиши текстом или прикрепи TXT-файл.
+
+Пример:
+«Тоби, подведи итог дня»
+«Разбери ответ пристава»
+«Сделай текст запроса в Сбербанк»`;
+
+let chatHistory = [];
+let isSending = false;
 
 function toggleMenu(){
   document.getElementById("menuOverlay").classList.toggle("open");
 }
 
-function getTime(){
-  const d = new Date();
-  return d.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});
+function openMenu(){
+  document.getElementById("menuOverlay").classList.add("open");
 }
 
-document.getElementById("timeNow").innerText = getTime();
+function closeMenu(){
+  document.getElementById("menuOverlay").classList.remove("open");
+}
+
+function getTime(date = new Date()){
+  return date.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});
+}
+
+function setStatus(text){
+  document.getElementById("status").innerText = text;
+}
 
 function escapeHtml(text){
   return String(text)
@@ -406,54 +424,151 @@ function escapeHtml(text){
     .replace(/>/g,"&gt;");
 }
 
-function scrollToMessage(element){
+function createMessage(role,text){
+  return {
+    role: role,
+    text: String(text || ""),
+    time: getTime(),
+    createdAt: new Date().toISOString()
+  };
+}
+
+function saveMessages(){
+  try{
+    localStorage.setItem(TOBI_STORAGE_KEY,JSON.stringify(chatHistory));
+  }catch(e){
+    console.error("Ошибка сохранения истории:",e);
+  }
+}
+
+function loadMessages(){
+  try{
+    const saved = localStorage.getItem(TOBI_STORAGE_KEY);
+    const parsed = saved ? JSON.parse(saved) : [];
+
+    if(Array.isArray(parsed)){
+      chatHistory = parsed.filter(item =>
+        item &&
+        typeof item.text === "string" &&
+        (item.role === "user" || item.role === "bot")
+      );
+    }
+  }catch(e){
+    console.error("Ошибка загрузки истории:",e);
+    chatHistory = [];
+  }
+
+  if(!chatHistory.length){
+    chatHistory = [createMessage("bot",START_MESSAGE)];
+    saveMessages();
+  }
+
+  renderChat();
+  scrollChatToBottom(false);
+}
+
+function clearChatHistory(){
+  chatHistory = [createMessage("bot",START_MESSAGE)];
+  saveMessages();
+  renderChat();
+  scrollChatToBottom(false);
+}
+
+function getMessageTime(message){
+  if(message.time) return message.time;
+
+  if(message.createdAt){
+    const d = new Date(message.createdAt);
+    if(!isNaN(d.getTime())) return getTime(d);
+  }
+
+  return getTime();
+}
+
+function renderMessage(message){
+  const chat = document.getElementById("chat");
+  const div = document.createElement("div");
+
+  if(message.role === "user"){
+    div.className = "message userMessage";
+    div.innerText = message.text;
+  }else{
+    div.className = "message botMessage";
+    div.innerHTML = `
+      <div class="msgHeader">
+        <span>Ответ TOBI</span>
+        <span class="msgTime">${getMessageTime(message)}</span>
+      </div>
+      <div>${escapeHtml(message.text)}</div>
+    `;
+  }
+
+  chat.appendChild(div);
+  return div;
+}
+
+function renderChat(){
+  const chat = document.getElementById("chat");
+  chat.innerHTML = "";
+
+  chatHistory.forEach(message => {
+    renderMessage(message);
+  });
+}
+
+function addMessage(role,text){
+  const safeText = role === "bot" ? cleanAnswer(text) : String(text || "").trim();
+
+  if(!safeText) return null;
+
+  const message = createMessage(role,safeText);
+  chatHistory.push(message);
+  saveMessages();
+
+  const element = renderMessage(message);
+
+  if(role === "bot"){
+    scrollToMessageTop(element);
+  }else{
+    scrollToMessageCenter(element);
+  }
+
+  return message;
+}
+
+function addUserMessage(text){
+  return addMessage("user",text);
+}
+
+function addBotMessage(text){
+  return addMessage("bot",text);
+}
+
+function scrollToMessageTop(element){
   setTimeout(()=>{
     element.scrollIntoView({
       behavior:"smooth",
       block:"start"
     });
-  },100);
+  },80);
 }
 
-function addUserMessage(text){
-  const chat = document.getElementById("chat");
-  const div = document.createElement("div");
-  div.className = "message userMessage";
-  div.innerText = text;
-  chat.appendChild(div);
-
+function scrollToMessageCenter(element){
   setTimeout(()=>{
-    div.scrollIntoView({
+    element.scrollIntoView({
       behavior:"smooth",
       block:"center"
     });
   },80);
 }
 
-function addBotMessage(text){
+function scrollChatToBottom(smooth = true){
   const chat = document.getElementById("chat");
-  const div = document.createElement("div");
-  div.className = "message botMessage";
 
-  div.innerHTML = `
-    <div class="msgHeader">
-      <span>Ответ TOBI</span>
-      <span class="msgTime">${getTime()}</span>
-    </div>
-    <div>${escapeHtml(text)}</div>
-  `;
-
-  chat.appendChild(div);
-  scrollToMessage(div);
-}
-
-function setAnswer(text){
-  const first = document.getElementById("answerText");
-  first.innerText = text;
   setTimeout(()=>{
-    first.closest(".message").scrollIntoView({
-      behavior:"smooth",
-      block:"start"
+    chat.scrollTo({
+      top: chat.scrollHeight,
+      behavior: smooth ? "smooth" : "auto"
     });
   },80);
 }
@@ -463,7 +578,7 @@ function cleanAnswer(value){
 
   let text = String(value).trim();
 
-  for(let i=0;i<5;i++){
+  for(let i = 0; i < 7; i++){
     try{
       const parsed = JSON.parse(text);
 
@@ -472,11 +587,23 @@ function cleanAnswer(value){
         continue;
       }
 
-      if(parsed.answer !== undefined) return cleanAnswer(parsed.answer);
-      if(parsed.response !== undefined) return cleanAnswer(parsed.response);
-      if(parsed.text !== undefined) return cleanAnswer(parsed.text);
-      if(parsed.result !== undefined) return cleanAnswer(parsed.result);
-      if(parsed.message !== undefined) return cleanAnswer(parsed.message);
+      if(Array.isArray(parsed)){
+        return parsed.map(item => cleanAnswer(item)).join("\n").trim();
+      }
+
+      if(parsed && typeof parsed === "object"){
+        const keys = ["answer","response","text","result","message","output","content"];
+
+        for(const key of keys){
+          if(parsed[key] !== undefined){
+            return cleanAnswer(parsed[key]);
+          }
+        }
+
+        return JSON.stringify(parsed,null,2);
+      }
+
+      return String(parsed).trim();
 
     }catch(e){
       break;
@@ -484,12 +611,12 @@ function cleanAnswer(value){
   }
 
   text = text
-    .replace(/^\s*\{\s*["']answer["']\s*:\s*["']?/i,"")
-    .replace(/^\s*\{\s*["']response["']\s*:\s*["']?/i,"")
-    .replace(/^\s*\{\s*["']text["']\s*:\s*["']?/i,"")
-    .replace(/^\s*\{\s*["']result["']\s*:\s*["']?/i,"")
+    .replace(/^\s*\{\s*["'](?:answer|response|text|result|message|output|content)["']\s*:\s*/i,"")
+    .replace(/^["']|["']$/g,"")
     .replace(/["']?\s*\}\s*$/,"")
+    .replace(/\\r\\n/g,"\n")
     .replace(/\\n/g,"\n")
+    .replace(/\\t/g,"\t")
     .replace(/\\"/g,'"')
     .replace(/\\\\/g,"\\");
 
@@ -497,23 +624,31 @@ function cleanAnswer(value){
 }
 
 function isMenuCommand(text){
-  const t = text.toLowerCase().trim();
+  const t = String(text || "")
+    .toLowerCase()
+    .replace(/[.,!?]/g,"")
+    .replace(/\s+/g," ")
+    .trim();
+
   return (
     t === "открой меню" ||
     t === "открыть меню" ||
     t === "тоби открой меню" ||
     t === "тоби меню" ||
     t === "центр управления" ||
-    t === "открой центр управления"
+    t === "открой центр управления" ||
+    t === "открыть центр управления"
   );
 }
 
 async function sendText(){
+  if(isSending) return;
+
   const input = document.getElementById("userText");
   const text = input.value.trim();
 
   if(!text){
-    setAnswer("Напиши задачу.");
+    addBotMessage("Напиши задачу.");
     return;
   }
 
@@ -522,12 +657,13 @@ async function sendText(){
   autoResizeInput();
 
   if(isMenuCommand(text)){
-    toggleMenu();
+    openMenu();
     addBotMessage("Центр управления открыт.");
     return;
   }
 
-  document.getElementById("status").innerText = "TOBI думает...";
+  setStatus("TOBI думает...");
+  isSending = true;
 
   try{
     const res = await fetch(MAKE_WEBHOOK_URL,{
@@ -545,25 +681,20 @@ async function sendText(){
 
     if(!res.ok){
       addBotMessage("Ошибка Make. Статус: " + res.status + "\n\n" + raw);
-      document.getElementById("status").innerText = "Ошибка.";
+      setStatus("Ошибка.");
       return;
     }
 
-    let answer = "";
+    const answer = cleanAnswer(raw) || "Ответ получен, но текст пустой.";
 
-    try{
-      const data = JSON.parse(raw);
-      answer = data.answer || data.response || data.text || data.result || raw;
-    }catch(e){
-      answer = raw;
-    }
-
-    addBotMessage(cleanAnswer(answer) || "Ответ получен, но текст пустой.");
-    document.getElementById("status").innerText = "Готово.";
+    addBotMessage(answer);
+    setStatus("Готово.");
 
   }catch(e){
     addBotMessage("Ошибка соединения:\n\n" + e.message);
-    document.getElementById("status").innerText = "Ошибка.";
+    setStatus("Ошибка.");
+  }finally{
+    isSending = false;
   }
 }
 
@@ -579,25 +710,26 @@ function startVoice(){
   recognition.lang = "ru-RU";
   recognition.interimResults = false;
 
-  document.getElementById("status").innerText = "Говори...";
+  setStatus("Говори...");
   recognition.start();
 
   recognition.onresult = function(event){
     const text = event.results[0][0].transcript;
     document.getElementById("userText").value = text;
-    document.getElementById("status").innerText = "Голос распознан.";
+    setStatus("Голос распознан.");
     sendText();
   };
 
   recognition.onerror = function(){
-    document.getElementById("status").innerText = "Ошибка голосового ввода.";
+    setStatus("Ошибка голосового ввода.");
   };
 }
 
 async function handleFile(){
   const fileInput = document.getElementById("fileInput");
   const file = fileInput.files[0];
-  const userText = document.getElementById("userText").value.trim();
+  const userTextInput = document.getElementById("userText");
+  const userText = userTextInput.value.trim();
 
   if(!file) return;
 
@@ -611,7 +743,7 @@ async function handleFile(){
 ${fileName}
 
 DOCX, PDF и фото подключим следующим шагом отдельно.`);
-    document.getElementById("status").innerText = "Пока доступен TXT.";
+    setStatus("Пока доступен TXT.");
     fileInput.value = "";
     return;
   }
@@ -624,13 +756,23 @@ DOCX, PDF и фото подключим следующим шагом отде�
 ${fileName}
 
 Пока загружайте TXT-файл меньше 1 МБ.`);
-    document.getElementById("status").innerText = "Файл слишком большой.";
+    setStatus("Файл слишком большой.");
     fileInput.value = "";
     return;
   }
 
-  addUserMessage("📎 Файл: " + fileName);
-  document.getElementById("status").innerText = "TOBI читает TXT-файл...";
+  const visibleUserMessage = userText
+    ? `${userText}
+
+📎 Файл: ${fileName}`
+    : "📎 Файл: " + fileName;
+
+  addUserMessage(visibleUserMessage);
+
+  userTextInput.value = "";
+  autoResizeInput();
+
+  setStatus("TOBI читает TXT-файл...");
 
   const reader = new FileReader();
 
@@ -641,7 +783,7 @@ ${fileName}
       addBotMessage(`Файл прочитан, но внутри нет текста:
 
 ${fileName}`);
-      document.getElementById("status").innerText = "Файл пустой.";
+      setStatus("Файл пустой.");
       fileInput.value = "";
       return;
     }
@@ -667,7 +809,7 @@ ${fileText}
 Не говори про кодировки, BOM, XML, архивы, форматы и техническое устройство файла.`;
 
     try{
-      document.getElementById("status").innerText = "TOBI думает...";
+      setStatus("TOBI думает...");
 
       const res = await fetch(MAKE_WEBHOOK_URL,{
         method:"POST",
@@ -684,34 +826,27 @@ ${fileText}
 
       if(!res.ok){
         addBotMessage("Ошибка Make при отправке текста из файла. Статус: " + res.status + "\n\n" + raw);
-        document.getElementById("status").innerText = "Ошибка файла.";
+        setStatus("Ошибка файла.");
         fileInput.value = "";
         return;
       }
 
-      let answer = "";
+      const answer = cleanAnswer(raw) || "Файл отправлен, но ответ пустой.";
 
-      try{
-        const data = JSON.parse(raw);
-        answer = data.answer || data.response || data.text || data.result || raw;
-      }catch(e){
-        answer = raw;
-      }
-
-      addBotMessage(cleanAnswer(answer) || "Файл отправлен, но ответ пустой.");
-      document.getElementById("status").innerText = "Файл обработан.";
+      addBotMessage(answer);
+      setStatus("Файл обработан.");
       fileInput.value = "";
 
     }catch(e){
       addBotMessage("Ошибка соединения с Make при отправке файла:\n\n" + e.message);
-      document.getElementById("status").innerText = "Ошибка файла.";
+      setStatus("Ошибка файла.");
       fileInput.value = "";
     }
   };
 
   reader.onerror = function(){
     addBotMessage("Не удалось прочитать TXT-файл. Попробуйте другой файл.");
-    document.getElementById("status").innerText = "Ошибка чтения файла.";
+    setStatus("Ошибка чтения файла.");
     fileInput.value = "";
   };
 
@@ -724,7 +859,11 @@ function autoResizeInput(){
   textarea.style.height = Math.min(textarea.scrollHeight,120) + "px";
 }
 
-document.getElementById("userText").addEventListener("input",autoResizeInput);
+document.addEventListener("DOMContentLoaded",function(){
+  loadMessages();
+
+  document.getElementById("userText").addEventListener("input",autoResizeInput);
+});
 </script>
 
 </body>
