@@ -33,7 +33,8 @@ background:
 radial-gradient(circle at 15% 20%,rgba(255,255,255,.8),transparent 25%),
 radial-gradient(circle at 80% 15%,rgba(111,167,255,.4),transparent 30%),
 linear-gradient(180deg,var(--bg1),var(--bg2),var(--bg3));
-overflow:hidden;
+overflow-y:auto;
+overflow-x:hidden;
 }
 
 body::before{
@@ -121,7 +122,11 @@ font-size:30px;
 .chat{
 flex:1;
 overflow-y:auto;
-padding-bottom:20px;
+overflow-x:hidden;
+padding-bottom:120px;
+height:calc(100vh - 120px);
+scroll-behavior:smooth;
+-webkit-overflow-scrolling:touch;
 }
 
 .message{
