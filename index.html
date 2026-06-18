@@ -106,7 +106,7 @@ body::before{
   margin:0 auto;
   height:100vh;
   min-height:100vh;
-  padding:106px 14px 112px;
+  padding:106px 14px 108px;
   display:flex;
   flex-direction:column;
 }
@@ -122,11 +122,9 @@ body::before{
 }
 
 .message{
+  position:relative;
   border-radius:22px;
-  padding:12px 14px 9px;
   margin-bottom:10px;
-  line-height:1.38;
-  font-size:15px;
   backdrop-filter:blur(22px);
   box-shadow:0 8px 22px rgba(0,0,0,.07);
   word-wrap:break-word;
@@ -139,6 +137,7 @@ body::before{
   max-width:94%;
   background:rgba(255,255,255,.58);
   border:1px solid var(--border);
+  padding:7px 12px 22px;
 }
 
 .userMessage{
@@ -147,25 +146,30 @@ body::before{
   margin-left:auto;
   background:linear-gradient(135deg,var(--blue),var(--blue2));
   color:white;
-  font-size:15px;
-  padding:12px 15px;
+  font-size:14px;
+  line-height:1.32;
+  padding:10px 14px;
 }
 
 .messageText{
-  font-size:15px;
-  line-height:1.38;
+  font-size:14px;
+  line-height:1.32;
   color:#111827;
 }
 
 .botFooter{
-  margin-top:6px;
+  position:absolute;
+  right:12px;
+  bottom:5px;
+  height:14px;
   display:flex;
   justify-content:flex-end;
   align-items:center;
 }
 
 .msgTime{
-  font-size:11px;
+  font-size:10px;
+  line-height:1;
   color:#64748b;
   font-weight:500;
 }
@@ -337,7 +341,7 @@ input[type=file]{
   </div>
 
   <div class="robot">
-    <img src="./tobi-robot.jpg?v=11" alt="TOBI Robot">
+    <img src="./tobi-robot.jpg?v=12" alt="TOBI Robot">
   </div>
 </div>
 
@@ -411,7 +415,7 @@ input[type=file]{
 
 <script>
 const MAKE_WEBHOOK_URL = "https://hook.us2.make.com/ieuyswwsxlrom238xqom6wuun9mgd47i";
-const TOBI_STORAGE_KEY = "tobi_chat_history_v2";
+const TOBI_STORAGE_KEY = "tobi_chat_history_v3";
 
 const START_MESSAGE = `Сергей, я готов.
 
