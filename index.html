@@ -6,865 +6,747 @@
 <title>TOBI Mobile</title>
 
 <style>
-
 *{
-margin:0;
-padding:0;
-box-sizing:border-box;
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
 }
 
 :root{
---bg1:#edf4fb;
---bg2:#d8e7f6;
---bg3:#b7d2ee;
---glass:rgba(255,255,255,.35);
---border:rgba(255,255,255,.4);
---text:#111827;
---muted:#64748b;
---blue:#4b7cff;
---blue2:#6fa7ff;
+  --bg1:#edf4fb;
+  --bg2:#d8e7f6;
+  --bg3:#b7d2ee;
+  --glass:rgba(255,255,255,.55);
+  --border:rgba(255,255,255,.45);
+  --text:#111827;
+  --muted:#64748b;
+  --blue:#4b7cff;
+  --blue2:#6fa7ff;
+}
+
+html,body{
+  min-height:100%;
 }
 
 body{
-font-family:Arial,sans-serif;
-color:var(--text);
-min-height:100vh;
-background:
-radial-gradient(circle at 15% 20%,rgba(255,255,255,.8),transparent 25%),
-radial-gradient(circle at 80% 15%,rgba(111,167,255,.4),transparent 30%),
-linear-gradient(180deg,var(--bg1),var(--bg2),var(--bg3));
-overflow-y:auto;
-overflow-x:hidden;
+  font-family:Arial,sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(circle at 15% 20%,rgba(255,255,255,.8),transparent 25%),
+    radial-gradient(circle at 80% 15%,rgba(111,167,255,.4),transparent 30%),
+    linear-gradient(180deg,var(--bg1),var(--bg2),var(--bg3));
+  overflow-y:auto;
+  overflow-x:hidden;
 }
 
 body::before{
-content:"";
-position:fixed;
-inset:0;
-background:
-repeating-linear-gradient(
-90deg,
-rgba(255,255,255,.08) 0px,
-rgba(255,255,255,.08) 1px,
-transparent 1px,
-transparent 80px
-),
-repeating-linear-gradient(
-0deg,
-rgba(255,255,255,.05) 0px,
-rgba(255,255,255,.05) 1px,
-transparent 1px,
-transparent 80px
-);
-pointer-events:none;
+  content:"";
+  position:fixed;
+  inset:0;
+  background:
+    repeating-linear-gradient(90deg,rgba(255,255,255,.08) 0px,rgba(255,255,255,.08) 1px,transparent 1px,transparent 80px),
+    repeating-linear-gradient(0deg,rgba(255,255,255,.05) 0px,rgba(255,255,255,.05) 1px,transparent 1px,transparent 80px);
+  pointer-events:none;
+  z-index:-1;
 }
 
 .app{
-max-width:480px;
-margin:0 auto;
-min-height:100vh;
-padding:18px 14px 110px;
-display:flex;
-flex-direction:column;
+  max-width:480px;
+  margin:0 auto;
+  min-height:100vh;
+  padding:18px 14px 120px;
 }
 
 .top{
-display:flex;
-justify-content:space-between;
-align-items:center;
-margin-bottom:16px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:16px;
 }
 
 .logoBlock{
-display:flex;
-align-items:center;
-gap:12px;
+  display:flex;
+  align-items:center;
+  gap:12px;
 }
 
 .logoIcon{
-width:50px;
-height:50px;
-border-radius:18px;
-background:rgba(255,255,255,.5);
-backdrop-filter:blur(20px);
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:24px;
-font-weight:900;
-box-shadow:0 10px 25px rgba(0,0,0,.08);
+  width:50px;
+  height:50px;
+  border-radius:18px;
+  background:rgba(255,255,255,.55);
+  backdrop-filter:blur(20px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:24px;
+  font-weight:900;
+  box-shadow:0 10px 25px rgba(0,0,0,.08);
 }
 
 .logoTitle{
-font-size:22px;
-font-weight:800;
+  font-size:34px;
+  font-weight:800;
 }
 
 .logoSub{
-font-size:13px;
-color:var(--muted);
-margin-top:3px;
+  font-size:17px;
+  color:var(--muted);
+  margin-top:3px;
 }
 
 .robot{
-width:56px;
-height:56px;
-border-radius:18px;
-background:rgba(255,255,255,.55);
-backdrop-filter:blur(20px);
-display:flex;
-align-items:center;
-justify-content:center;
-box-shadow:0 10px 25px rgba(0,0,0,.08);
-font-size:30px;
+  width:64px;
+  height:64px;
+  border-radius:22px;
+  background:rgba(255,255,255,.58);
+  backdrop-filter:blur(20px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 10px 25px rgba(0,0,0,.08);
+  font-size:32px;
 }
 
 .chat{
-flex:1;
-overflow-y:auto;
-overflow-x:hidden;
-padding-bottom:120px;
-height:calc(100vh - 120px);
-scroll-behavior:smooth;
--webkit-overflow-scrolling:touch;
+  width:100%;
+  scroll-behavior:smooth;
 }
 
 .message{
-border-radius:26px;
-padding:18px;
-margin-bottom:16px;
-line-height:1.6;
-font-size:16px;
-backdrop-filter:blur(22px);
-box-shadow:0 12px 30px rgba(0,0,0,.08);
+  border-radius:26px;
+  padding:18px;
+  margin-bottom:16px;
+  line-height:1.6;
+  font-size:18px;
+  backdrop-filter:blur(22px);
+  box-shadow:0 12px 30px rgba(0,0,0,.08);
+  word-wrap:break-word;
+  white-space:pre-wrap;
 }
 
 .botMessage{
-width:96%;
-background:rgba(255,255,255,.55);
-border:1px solid var(--border);
+  width:96%;
+  background:rgba(255,255,255,.58);
+  border:1px solid var(--border);
 }
 
 .userMessage{
-width:75%;
-margin-left:auto;
-background:linear-gradient(135deg,var(--blue),var(--blue2));
-color:white;
+  width:75%;
+  margin-left:auto;
+  background:linear-gradient(135deg,var(--blue),var(--blue2));
+  color:white;
 }
 
 .msgHeader{
-display:flex;
-justify-content:space-between;
-align-items:center;
-margin-bottom:12px;
-font-size:14px;
-font-weight:700;
-color:var(--blue);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:12px;
+  font-size:17px;
+  font-weight:700;
+  color:var(--blue);
 }
 
 .msgTime{
-font-size:12px;
-color:#64748b;
+  font-size:14px;
+  color:#64748b;
+  font-weight:500;
 }
 
 .inputPanel{
-position:fixed;
-left:50%;
-bottom:15px;
-transform:translateX(-50%);
-width:min(450px,calc(100vw - 24px));
-padding:10px;
-border-radius:26px;
-background:rgba(255,255,255,.45);
-backdrop-filter:blur(30px);
-box-shadow:0 15px 35px rgba(0,0,0,.1);
-display:grid;
-grid-template-columns:44px 1fr 44px 44px;
-gap:8px;
-align-items:end;
-z-index:10;
+  position:fixed;
+  left:50%;
+  bottom:15px;
+  transform:translateX(-50%);
+  width:min(450px,calc(100vw - 24px));
+  padding:10px;
+  border-radius:26px;
+  background:rgba(255,255,255,.62);
+  backdrop-filter:blur(30px);
+  box-shadow:0 15px 35px rgba(0,0,0,.1);
+  display:grid;
+  grid-template-columns:44px 1fr 44px 44px;
+  gap:8px;
+  align-items:end;
+  z-index:50;
 }
 
 textarea{
-width:100%;
-min-height:42px;
-max-height:120px;
-border:none;
-outline:none;
-background:transparent;
-resize:none;
-font-size:15px;
-font-family:Arial,sans-serif;
-padding:10px 2px;
-color:#111827;
+  width:100%;
+  min-height:42px;
+  max-height:120px;
+  border:none;
+  outline:none;
+  background:transparent;
+  resize:none;
+  font-size:17px;
+  font-family:Arial,sans-serif;
+  padding:10px 2px;
+  color:#111827;
 }
 
 textarea::placeholder{
-color:#64748b;
+  color:#64748b;
 }
 
-button,
-.fileLabel{
-width:44px;
-height:44px;
-border:none;
-border-radius:16px;
-cursor:pointer;
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:20px;
-background:rgba(255,255,255,.65);
-box-shadow:0 8px 20px rgba(0,0,0,.08);
+button,.fileLabel{
+  width:44px;
+  height:44px;
+  border:none;
+  border-radius:16px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:20px;
+  background:rgba(255,255,255,.72);
+  box-shadow:0 8px 20px rgba(0,0,0,.08);
 }
 
 .sendBtn{
-background:linear-gradient(135deg,#4b7cff,#699eff);
-color:white;
+  background:linear-gradient(135deg,#4b7cff,#699eff);
+  color:white;
 }
 
 input[type=file]{
-display:none;
+  display:none;
 }
 
 .menuButton{
-position:fixed;
-top:18px;
-left:18px;
-width:42px;
-height:42px;
-border-radius:15px;
-border:none;
-background:rgba(255,255,255,.55);
-backdrop-filter:blur(20px);
-font-size:24px;
-z-index:100;
+  position:fixed;
+  top:18px;
+  left:18px;
+  width:42px;
+  height:42px;
+  border-radius:15px;
+  border:none;
+  background:rgba(255,255,255,.65);
+  backdrop-filter:blur(20px);
+  font-size:24px;
+  z-index:100;
 }
 
 .status{
-display:none;
+  display:none;
 }
+
 .menuOverlay{
-position:fixed;
-inset:0;
-background:rgba(15,23,42,.28);
-backdrop-filter:blur(18px);
--webkit-backdrop-filter:blur(18px);
-z-index:200;
-display:none;
-align-items:center;
-justify-content:center;
-padding:22px;
+  position:fixed;
+  inset:0;
+  background:rgba(15,23,42,.28);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+  z-index:200;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:22px;
+}
+
+.menuOverlay.open{
+  display:flex;
 }
 
 .menuCard{
-width:100%;
-max-width:420px;
-border-radius:30px;
-background:rgba(255,255,255,.72);
-border:1px solid rgba(255,255,255,.45);
-box-shadow:0 25px 70px rgba(31,58,95,.28);
-padding:22px;
+  width:100%;
+  max-width:420px;
+  border-radius:30px;
+  background:rgba(255,255,255,.78);
+  border:1px solid rgba(255,255,255,.45);
+  box-shadow:0 25px 70px rgba(31,58,95,.28);
+  padding:22px;
 }
 
 .menuTop{
-display:flex;
-justify-content:space-between;
-align-items:center;
-margin-bottom:18px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:18px;
 }
 
 .menuTitle{
-font-size:24px;
-font-weight:800;
+  font-size:24px;
+  font-weight:800;
 }
 
 .menuSub{
-font-size:14px;
-color:#64748b;
-margin-top:4px;
+  font-size:14px;
+  color:#64748b;
+  margin-top:4px;
 }
 
 .closeBtn{
-width:44px;
-height:44px;
-border-radius:16px;
-font-size:26px;
+  width:44px;
+  height:44px;
+  border-radius:16px;
+  font-size:26px;
 }
 
 .menuGrid{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:12px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
 }
 
 .menuItem{
-border-radius:22px;
-background:rgba(255,255,255,.55);
-border:1px solid rgba(255,255,255,.45);
-padding:16px;
-min-height:100px;
-box-shadow:0 10px 25px rgba(0,0,0,.06);
+  border-radius:22px;
+  background:rgba(255,255,255,.6);
+  border:1px solid rgba(255,255,255,.45);
+  padding:16px;
+  min-height:100px;
+  box-shadow:0 10px 25px rgba(0,0,0,.06);
 }
 
 .menuIcon{
-font-size:24px;
-margin-bottom:8px;
+  font-size:24px;
+  margin-bottom:8px;
 }
 
 .menuName{
-font-size:16px;
-font-weight:800;
+  font-size:16px;
+  font-weight:800;
 }
 
 .menuDesc{
-font-size:13px;
-color:#64748b;
-margin-top:4px;
+  font-size:13px;
+  color:#64748b;
+  margin-top:4px;
 }
 </style>
 </head>
+
 <body>
 
 <button class="menuButton" onclick="toggleMenu()">☰</button>
 
 <div class="app">
 
-<div class="top">
+  <div class="top">
+    <div class="logoBlock">
+      <div class="logoIcon">⌬</div>
+      <div>
+        <div class="logoTitle">TOBI</div>
+        <div class="logoSub">Личный помощник</div>
+      </div>
+    </div>
 
-<div class="logoBlock">
+    <div class="robot">🤖</div>
+  </div>
 
-<div class="logoIcon">
-⌬
-</div>
-
-<div>
-
-<div class="logoTitle">
-TOBI
-</div>
-
-<div class="logoSub">
-Личный помощник
-</div>
-
-</div>
-</div>
-
-<div class="robot">
-🤖
-</div>
-
-</div>
-
-<div class="chat" id="chat">
-
-<div class="message botMessage">
-
-<div class="msgHeader">
-
-<span>
-Ответ TOBI
-</span>
-
-<span class="msgTime" id="timeNow">
-сейчас
-</span>
-
-</div>
-
-<div id="answerText">
-
-Сергей, я готов.
+  <div class="chat" id="chat">
+    <div class="message botMessage">
+      <div class="msgHeader">
+        <span>Ответ TOBI</span>
+        <span class="msgTime" id="timeNow">сейчас</span>
+      </div>
+      <div id="answerText">Сергей, я готов.
 
 Скажи голосом, напиши текстом или прикрепи TXT-файл.
 
 Пример:
-
 «Тоби, подведи итог дня»
-
 «Разбери ответ пристава»
-
-«Сделай текст запроса в Сбербанк»
-
-</div>
-
-</div>
-
-</div>
+«Сделай текст запроса в Сбербанк»</div>
+    </div>
+  </div>
 
 </div>
 
 <div class="inputPanel">
+  <label class="fileLabel">
+    📎
+    <input
+      type="file"
+      id="fileInput"
+      accept=".txt,text/plain"
+      onchange="handleFile()"
+    />
+  </label>
 
-<label class="fileLabel">
+  <textarea id="userText" placeholder="Введите запрос..."></textarea>
 
-📎
+  <button onclick="startVoice()">🎙</button>
 
-<input
-type="file"
-id="fileInput"
-accept=".txt,text/plain"
-onchange="handleFile()"
-/>
-
-</label>
-
-<textarea
-id="userText"
-placeholder="Введите запрос..."
-></textarea>
-
-<button onclick="startVoice()">
-🎙
-</button>
-
-<button
-class="sendBtn"
-onclick="sendText()">
-➤
-</button>
-
+  <button class="sendBtn" onclick="sendText()">➤</button>
 </div>
 
-<div class="status" id="status">
-Готово.
-</div>
-
+<div class="status" id="status">Готово.</div>
 
 <div class="menuOverlay" id="menuOverlay">
+  <div class="menuCard">
 
-<div class="menuCard">
+    <div class="menuTop">
+      <div>
+        <div class="menuTitle">TOBI Center</div>
+        <div class="menuSub">Закрытый центр управления</div>
+      </div>
 
-<div class="menuTop">
+      <button class="closeBtn" onclick="toggleMenu()">×</button>
+    </div>
 
-<div>
+    <div class="menuGrid">
+      <div class="menuItem">
+        <div class="menuIcon">🧠</div>
+        <div class="menuName">Память</div>
+        <div class="menuDesc">Факты и правила</div>
+      </div>
 
-<div class="menuTitle">
-TOBI Center
+      <div class="menuItem">
+        <div class="menuIcon">📄</div>
+        <div class="menuName">Документы</div>
+        <div class="menuDesc">TXT PDF DOCX</div>
+      </div>
+
+      <div class="menuItem">
+        <div class="menuIcon">📅</div>
+        <div class="menuName">Планирование</div>
+        <div class="menuDesc">Календарь и дела</div>
+      </div>
+
+      <div class="menuItem">
+        <div class="menuIcon">📊</div>
+        <div class="menuName">Аналитика</div>
+        <div class="menuDesc">Отчёты и статистика</div>
+      </div>
+
+      <div class="menuItem">
+        <div class="menuIcon">🗂</div>
+        <div class="menuName">Кейсы</div>
+        <div class="menuDesc">Активные проекты</div>
+      </div>
+
+      <div class="menuItem">
+        <div class="menuIcon">⚙️</div>
+        <div class="menuName">Настройки</div>
+        <div class="menuDesc">Связки и сервисы</div>
+      </div>
+    </div>
+
+  </div>
 </div>
 
-<div class="menuSub">
-Закрытый центр управления
-</div>
-
-</div>
-
-<button
-class="closeBtn"
-onclick="toggleMenu()">
-
-×
-
-</button>
-
-</div>
-
-
-<div class="menuGrid">
-
-<div class="menuItem">
-
-<div class="menuIcon">
-🧠
-</div>
-
-<div class="menuName">
-Память
-</div>
-
-<div class="menuDesc">
-Факты и правила
-</div>
-
-</div>
-
-
-<div class="menuItem">
-
-<div class="menuIcon">
-📄
-</div>
-
-<div class="menuName">
-Документы
-</div>
-
-<div class="menuDesc">
-TXT PDF DOCX
-</div>
-
-</div>
-
-
-<div class="menuItem">
-
-<div class="menuIcon">
-📅
-</div>
-
-<div class="menuName">
-Планирование
-</div>
-
-<div class="menuDesc">
-Календарь и дела
-</div>
-
-</div>
-
-
-<div class="menuItem">
-
-<div class="menuIcon">
-📊
-</div>
-
-<div class="menuName">
-Аналитика
-</div>
-
-<div class="menuDesc">
-Отчёты и статистика
-</div>
-
-</div>
-
-
-<div class="menuItem">
-
-<div class="menuIcon">
-🗂
-</div>
-
-<div class="menuName">
-Кейсы
-</div>
-
-<div class="menuDesc">
-Активные проекты
-</div>
-
-</div>
-
-
-<div class="menuItem">
-
-<div class="menuIcon">
-⚙️
-</div>
-
-<div class="menuName">
-Настройки
-</div>
-
-<div class="menuDesc">
-Связки и сервисы
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
 <script>
-
 const MAKE_WEBHOOK_URL = "https://hook.us2.make.com/ieuyswwsxlrom238xqom6wuun9mgd47i";
 
-function toggleMenu() {
-  const menu = document.getElementById("menuOverlay");
-
-  if (menu.style.display === "flex") {
-    menu.style.display = "none";
-  } else {
-    menu.style.display = "flex";
-  }
+function toggleMenu(){
+  document.getElementById("menuOverlay").classList.toggle("open");
 }
 
-function getTime() {
+function getTime(){
   const d = new Date();
-
-  return d.toLocaleTimeString(
-    "ru-RU",
-    {
-      hour: "2-digit",
-      minute: "2-digit"
-    }
-  );
+  return d.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});
 }
 
-document.getElementById(
-  "timeNow"
-).innerText = getTime();
+document.getElementById("timeNow").innerText = getTime();
 
-function scrollChat() {
-
-  const chat =
-    document.getElementById("chat");
-
-  chat.scrollTop =
-    chat.scrollHeight;
-
+function escapeHtml(text){
+  return String(text)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;");
 }
 
-function addUserMessage(text) {
+function scrollToMessage(element){
+  setTimeout(()=>{
+    element.scrollIntoView({
+      behavior:"smooth",
+      block:"start"
+    });
+  },100);
+}
 
-  const chat =
-    document.getElementById("chat");
-
-  const div =
-    document.createElement("div");
-
-  div.className =
-    "message userMessage";
-
+function addUserMessage(text){
+  const chat = document.getElementById("chat");
+  const div = document.createElement("div");
+  div.className = "message userMessage";
   div.innerText = text;
-
   chat.appendChild(div);
 
-  scrollChat();
-
+  setTimeout(()=>{
+    div.scrollIntoView({
+      behavior:"smooth",
+      block:"center"
+    });
+  },80);
 }
 
-function addBotMessage(text) {
+function addBotMessage(text){
+  const chat = document.getElementById("chat");
+  const div = document.createElement("div");
+  div.className = "message botMessage";
 
-  const chat =
-    document.getElementById("chat");
-
-  const div =
-    document.createElement("div");
-
-  div.className =
-    "message botMessage";
-
-  div.innerHTML =
-
-  `
-  <div class="msgHeader">
-
-    <span>
-    Ответ TOBI
-    </span>
-
-    <span class="msgTime">
-    ${getTime()}
-    </span>
-
-  </div>
-
-  <div>
-
-  ${String(text).replace(/\n/g,"<br>")}
-
-  </div>
-
+  div.innerHTML = `
+    <div class="msgHeader">
+      <span>Ответ TOBI</span>
+      <span class="msgTime">${getTime()}</span>
+    </div>
+    <div>${escapeHtml(text)}</div>
   `;
 
   chat.appendChild(div);
-
-  scrollChat();
-
+  scrollToMessage(div);
 }
 
-function setAnswer(text) {
-
-  document.getElementById(
-    "answerText"
-  ).innerText = text;
-
+function setAnswer(text){
+  const first = document.getElementById("answerText");
+  first.innerText = text;
+  setTimeout(()=>{
+    first.closest(".message").scrollIntoView({
+      behavior:"smooth",
+      block:"start"
+    });
+  },80);
 }
 
-function cleanAnswer(value) {
+function cleanAnswer(value){
+  if(value === null || value === undefined) return "";
 
-  if (!value) return "";
+  let text = String(value).trim();
 
-  let text =
-    String(value).trim();
+  for(let i=0;i<3;i++){
+    try{
+      const parsed = JSON.parse(text);
 
-  try {
+      if(typeof parsed === "string"){
+        text = parsed.trim();
+        continue;
+      }
 
-    const parsed =
-      JSON.parse(text);
+      if(parsed.answer !== undefined) return cleanAnswer(parsed.answer);
+      if(parsed.response !== undefined) return cleanAnswer(parsed.response);
+      if(parsed.text !== undefined) return cleanAnswer(parsed.text);
+      if(parsed.result !== undefined) return cleanAnswer(parsed.result);
+      if(parsed.message !== undefined) return cleanAnswer(parsed.message);
 
-    if (parsed.answer)
-      return cleanAnswer(parsed.answer);
-
-    if (parsed.response)
-      return cleanAnswer(parsed.response);
-
-    if (parsed.text)
-      return cleanAnswer(parsed.text);
-
-  } catch (e) {}
+    }catch(e){
+      break;
+    }
+  }
 
   text = text
+    .replace(/^\s*\{\s*"answer"\s*:\s*"/i,"")
+    .replace(/^\s*\{\s*"response"\s*:\s*"/i,"")
+    .replace(/^\s*\{\s*"text"\s*:\s*"/i,"")
+    .replace(/"\s*\}\s*$/,"")
     .replace(/\\n/g,"\n")
-    .replace(/\\"/g,'"');
+    .replace(/\\"/g,'"')
+    .replace(/\\\\/g,"\\");
 
   return text.trim();
-
 }
 
-async function sendText() {
+async function sendText(){
+  const input = document.getElementById("userText");
+  const text = input.value.trim();
 
-  const input =
-    document.getElementById(
-      "userText"
-    );
-
-  const text =
-    input.value.trim();
-
-  if (!text) {
-
-    setAnswer(
-      "Напиши задачу."
-    );
-
+  if(!text){
+    setAnswer("Напиши задачу.");
     return;
-
   }
 
   addUserMessage(text);
-
   input.value = "";
+  autoResizeInput();
 
-  document.getElementById(
-    "status"
-  ).innerText =
-    "TOBI думает...";
+  document.getElementById("status").innerText = "TOBI думает...";
 
-  try {
+  try{
+    const res = await fetch(MAKE_WEBHOOK_URL,{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({
+        type:"text",
+        text:text
+      })
+    });
 
-    const res =
-      await fetch(
-        MAKE_WEBHOOK_URL,
-        {
-          method:"POST",
+    const raw = await res.text();
 
-          headers:{
-            "Content-Type":
-            "application/json"
-          },
-
-          body:JSON.stringify({
-
-            type:"text",
-
-            text:text
-
-          })
-
-        }
-      );
-
-    const raw =
-      await res.text();
+    if(!res.ok){
+      addBotMessage("Ошибка Make. Статус: " + res.status + "\n\n" + raw);
+      document.getElementById("status").innerText = "Ошибка.";
+      return;
+    }
 
     let answer = "";
 
-    try {
-
-      const data =
-        JSON.parse(raw);
-
-      answer =
-        data.answer ||
-        data.response ||
-        data.text ||
-        raw;
-
-    }
-
-    catch(e){
-
+    try{
+      const data = JSON.parse(raw);
+      answer = data.answer || data.response || data.text || data.result || raw;
+    }catch(e){
       answer = raw;
-
     }
 
-    addBotMessage(
+    addBotMessage(cleanAnswer(answer) || "Ответ получен, но текст пустой.");
+    document.getElementById("status").innerText = "Готово.";
 
-      cleanAnswer(answer)
-
-    );
-
-    document.getElementById(
-      "status"
-    ).innerText =
-      "Готово";
-
+  }catch(e){
+    addBotMessage("Ошибка соединения:\n\n" + e.message);
+    document.getElementById("status").innerText = "Ошибка.";
   }
-
-  catch(e){
-
-    addBotMessage(
-
-      "Ошибка соединения:\n\n"
-
-      + e.message
-
-    );
-
-  }
-
 }
 
-function startVoice() {
+function startVoice(){
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-  const SpeechRecognition =
-
-    window.SpeechRecognition ||
-
-    window.webkitSpeechRecognition;
-
-  if (!SpeechRecognition) {
-
-    addBotMessage(
-
-      "Голосовой ввод поддерживается через Chrome."
-
-    );
-
+  if(!SpeechRecognition){
+    addBotMessage("Голосовой ввод поддерживается через Chrome.");
     return;
-
   }
 
-  const recognition =
-    new SpeechRecognition();
+  const recognition = new SpeechRecognition();
+  recognition.lang = "ru-RU";
+  recognition.interimResults = false;
 
-  recognition.lang =
-    "ru-RU";
-
+  document.getElementById("status").innerText = "Говори...";
   recognition.start();
 
-  recognition.onresult =
-    function(event){
+  recognition.onresult = function(event){
+    const text = event.results[0][0].transcript;
+    document.getElementById("userText").value = text;
+    document.getElementById("status").innerText = "Голос распознан.";
+    sendText();
+  };
 
-      const text =
-        event.results[0][0].transcript;
-
-      document.getElementById(
-        "userText"
-      ).value = text;
-
-      sendText();
-
-    };
-
+  recognition.onerror = function(){
+    document.getElementById("status").innerText = "Ошибка голосового ввода.";
+  };
 }
 
-function handleFile(){
+async function handleFile(){
+  const fileInput = document.getElementById("fileInput");
+  const file = fileInput.files[0];
+  const userText = document.getElementById("userText").value.trim();
 
-  addBotMessage(
+  if(!file) return;
 
-    "TXT-файлы подключены.\n\nPDF и DOCX подключим следующим шагом."
+  const fileName = file.name || "";
+  const isTxt = fileName.toLowerCase().endsWith(".txt") || file.type === "text/plain";
 
-  );
+  if(!isTxt){
+    addBotMessage(`Сергей, пока я безопасно читаю только TXT-файлы.
 
+Вы выбрали:
+${fileName}
+
+DOCX, PDF и фото подключим следующим шагом отдельно, чтобы не ломать рабочий TOBI.`);
+    document.getElementById("status").innerText = "Пока доступен TXT.";
+    fileInput.value = "";
+    return;
+  }
+
+  const maxSize = 1024 * 1024;
+
+  if(file.size > maxSize){
+    addBotMessage(`Файл слишком большой:
+
+${fileName}
+
+Пока загружайте TXT-файл меньше 1 МБ.`);
+    document.getElementById("status").innerText = "Файл слишком большой.";
+    fileInput.value = "";
+    return;
+  }
+
+  addUserMessage("📎 Файл: " + fileName);
+  document.getElementById("status").innerText = "TOBI читает TXT-файл...";
+
+  const reader = new FileReader();
+
+  reader.onload = async function(event){
+    const fileText = String(event.target.result || "").trim();
+
+    if(!fileText){
+      addBotMessage(`Файл прочитан, но внутри нет текста:
+
+${fileName}`);
+      document.getElementById("status").innerText = "Файл пустой.";
+      fileInput.value = "";
+      return;
+    }
+
+    const task = userText || "Проанализируй текст из файла и дай короткий понятный вывод.";
+
+    const textForTobi = `Пользователь прикрепил TXT-файл.
+
+Имя файла: ${fileName}
+
+Задача пользователя:
+${task}
+
+Точное содержимое файла между метками:
+
+--- НАЧАЛО ФАЙЛА ---
+${fileText}
+--- КОНЕЦ ФАЙЛА ---
+
+Ответь коротко и по делу.
+Анализируй только текст между метками.
+Не придумывай то, чего нет в тексте.
+Не говори про кодировки, BOM, XML, архивы, форматы и техническое устройство файла.`;
+
+    try{
+      document.getElementById("status").innerText = "TOBI думает...";
+
+      const res = await fetch(MAKE_WEBHOOK_URL,{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+          type:"text",
+          text:textForTobi
+        })
+      });
+
+      const raw = await res.text();
+
+      if(!res.ok){
+        addBotMessage("Ошибка Make при отправке текста из файла. Статус: " + res.status + "\n\n" + raw);
+        document.getElementById("status").innerText = "Ошибка файла.";
+        fileInput.value = "";
+        return;
+      }
+
+      let answer = "";
+
+      try{
+        const data = JSON.parse(raw);
+        answer = data.answer || data.response || data.text || data.result || raw;
+      }catch(e){
+        answer = raw;
+      }
+
+      addBotMessage(cleanAnswer(answer) || "Файл отправлен, но ответ пустой.");
+      document.getElementById("status").innerText = "Файл обработан.";
+      fileInput.value = "";
+
+    }catch(e){
+      addBotMessage("Ошибка соединения с Make при отправке файла:\n\n" + e.message);
+      document.getElementById("status").innerText = "Ошибка файла.";
+      fileInput.value = "";
+    }
+  };
+
+  reader.onerror = function(){
+    addBotMessage("Не удалось прочитать TXT-файл. Попробуйте другой файл.");
+    document.getElementById("status").innerText = "Ошибка чтения файла.";
+    fileInput.value = "";
+  };
+
+  reader.readAsText(file,"UTF-8");
 }
 
+function autoResizeInput(){
+  const textarea = document.getElementById("userText");
+  textarea.style.height = "42px";
+  textarea.style.height = Math.min(textarea.scrollHeight,120) + "px";
+}
+
+document.getElementById("userText").addEventListener("input",autoResizeInput);
 </script>
 
 </body>
