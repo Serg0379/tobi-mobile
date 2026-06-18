@@ -205,8 +205,18 @@ button,.fileLabel{
   box-shadow:0 8px 20px rgba(0,0,0,.08);
 }
 
+button:disabled{
+  opacity:.55;
+  cursor:not-allowed;
+}
+
 .sendBtn{
   background:linear-gradient(135deg,#4b7cff,#699eff);
+  color:white;
+}
+
+.micListening{
+  background:linear-gradient(135deg,#ff6b6b,#ff9f9f);
   color:white;
 }
 
@@ -325,8 +335,8 @@ input[type=file]{
 
   <textarea id="userText" placeholder="Введите запрос..."></textarea>
 
-  <button onclick="startVoice()">🎙</button>
-  <button class="sendBtn" onclick="sendText()">➤</button>
+  <button id="voiceBtn" onclick="startVoice()">🎙</button>
+  <button id="sendBtn" class="sendBtn" onclick="sendText()">➤</button>
 </div>
 
 <div class="status" id="status">Готово.</div>
@@ -383,7 +393,7 @@ input[type=file]{
 
 <script>
 const MAKE_WEBHOOK_URL = "https://hook.us2.make.com/ieuyswwsxlrom238xqom6wuun9mgd47i";
-const TOBI_STORAGE_KEY = "tobi_chat_history_v1";
+const TOBI_STORAGE_KEY = "tobi_chat_history_v2";
 
 const START_MESSAGE = `Сергей, я готов.
 
@@ -396,6 +406,9 @@ const START_MESSAGE = `Сергей, я готов.
 
 let chatHistory = [];
 let isSending = false;
+let isListening = false;
+let lastSentText = "";
+let lastSentAt = 0;
 
 function toggleMenu(){
   document.getElementById("menuOverlay").classList.toggle("open");
@@ -417,11 +430,26 @@ function setStatus(text){
   document.getElementById("status").innerText = text;
 }
 
+function setSendingState(value){
+  isSending = value;
+  const sendBtn = document.getElementById("sendBtn");
+  if(sendBtn) sendBtn.disabled = value;
+}
+
 function escapeHtml(text){
   return String(text)
     .replace(/&/g,"&amp;")
     .replace(/</g,"&lt;")
     .replace(/>/g,"&gt;");
+}
+
+function normalizeCommand(text){
+  return String(text || "")
+    .toLowerCase()
+    .replace(/ё/g,"е")
+    .replace(/[.,!?;:]/g,"")
+    .replace(/\s+/g," ")
+    .trim();
 }
 
 function createMessage(role,text){
@@ -624,37 +652,73 @@ function cleanAnswer(value){
 }
 
 function isMenuCommand(text){
-  const t = String(text || "")
-    .toLowerCase()
-    .replace(/[.,!?]/g,"")
-    .replace(/\s+/g," ")
-    .trim();
+  const t = normalizeCommand(text);
 
   return (
+    t === "открой" ||
     t === "открой меню" ||
     t === "открыть меню" ||
-    t === "тоби открой меню" ||
-    t === "тоби меню" ||
+    t === "открой центр" ||
     t === "центр управления" ||
     t === "открой центр управления" ||
-    t === "открыть центр управления"
+    t === "открыть центр управления" ||
+    t === "тоби открой" ||
+    t === "тоби открой меню" ||
+    t === "тоби открыть меню" ||
+    t === "тоби меню" ||
+    t === "тоби открой центр управления"
   );
 }
 
-async function sendText(){
+function isClearCommand(text){
+  const t = normalizeCommand(text);
+
+  return (
+    t === "очисти чат" ||
+    t === "очистить чат" ||
+    t === "сбрось чат" ||
+    t === "новый чат" ||
+    t === "тоби очисти чат" ||
+    t === "тоби новый чат"
+  );
+}
+
+function shouldBlockDuplicate(text){
+  const normalized = normalizeCommand(text);
+  const now = Date.now();
+
+  if(normalized && normalized === lastSentText && now - lastSentAt < 1500){
+    return true;
+  }
+
+  lastSentText = normalized;
+  lastSentAt = now;
+  return false;
+}
+
+async function sendText(textFromVoice = null){
   if(isSending) return;
 
   const input = document.getElementById("userText");
-  const text = input.value.trim();
+  const text = String(textFromVoice !== null ? textFromVoice : input.value).trim();
 
   if(!text){
     addBotMessage("Напиши задачу.");
     return;
   }
 
+  if(shouldBlockDuplicate(text)) return;
+
   addUserMessage(text);
+
   input.value = "";
   autoResizeInput();
+
+  if(isClearCommand(text)){
+    clearChatHistory();
+    addBotMessage("Чат очищен. Начинаем заново.");
+    return;
+  }
 
   if(isMenuCommand(text)){
     openMenu();
@@ -663,7 +727,7 @@ async function sendText(){
   }
 
   setStatus("TOBI думает...");
-  isSending = true;
+  setSendingState(true);
 
   try{
     const res = await fetch(MAKE_WEBHOOK_URL,{
@@ -694,11 +758,13 @@ async function sendText(){
     addBotMessage("Ошибка соединения:\n\n" + e.message);
     setStatus("Ошибка.");
   }finally{
-    isSending = false;
+    setSendingState(false);
   }
 }
 
 function startVoice(){
+  if(isListening || isSending) return;
+
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
   if(!SpeechRecognition){
@@ -706,26 +772,72 @@ function startVoice(){
     return;
   }
 
+  const voiceBtn = document.getElementById("voiceBtn");
+  const input = document.getElementById("userText");
+
   const recognition = new SpeechRecognition();
   recognition.lang = "ru-RU";
-  recognition.interimResults = false;
+  recognition.interimResults = true;
+  recognition.continuous = false;
+  recognition.maxAlternatives = 1;
 
+  let finalTranscript = "";
+  let bestTranscript = "";
+  let voiceSent = false;
+
+  isListening = true;
   setStatus("Говори...");
+  voiceBtn.classList.add("micListening");
+
   recognition.start();
 
   recognition.onresult = function(event){
-    const text = event.results[0][0].transcript;
-    document.getElementById("userText").value = text;
-    setStatus("Голос распознан.");
-    sendText();
+    let interimTranscript = "";
+
+    for(let i = event.resultIndex; i < event.results.length; i++){
+      const transcript = event.results[i][0].transcript.trim();
+
+      if(event.results[i].isFinal){
+        finalTranscript += " " + transcript;
+      }else{
+        interimTranscript += " " + transcript;
+      }
+    }
+
+    bestTranscript = (finalTranscript || interimTranscript).trim();
+
+    if(bestTranscript){
+      input.value = bestTranscript;
+      autoResizeInput();
+    }
   };
 
   recognition.onerror = function(){
     setStatus("Ошибка голосового ввода.");
   };
+
+  recognition.onend = function(){
+    isListening = false;
+    voiceBtn.classList.remove("micListening");
+
+    const text = (finalTranscript || bestTranscript).trim();
+
+    if(!text){
+      setStatus("Голос не распознан.");
+      return;
+    }
+
+    if(voiceSent) return;
+    voiceSent = true;
+
+    setStatus("Голос распознан.");
+    sendText(text);
+  };
 }
 
 async function handleFile(){
+  if(isSending) return;
+
   const fileInput = document.getElementById("fileInput");
   const file = fileInput.files[0];
   const userTextInput = document.getElementById("userText");
@@ -810,6 +922,7 @@ ${fileText}
 
     try{
       setStatus("TOBI думает...");
+      setSendingState(true);
 
       const res = await fetch(MAKE_WEBHOOK_URL,{
         method:"POST",
@@ -841,6 +954,8 @@ ${fileText}
       addBotMessage("Ошибка соединения с Make при отправке файла:\n\n" + e.message);
       setStatus("Ошибка файла.");
       fileInput.value = "";
+    }finally{
+      setSendingState(false);
     }
   };
 
@@ -862,7 +977,16 @@ function autoResizeInput(){
 document.addEventListener("DOMContentLoaded",function(){
   loadMessages();
 
-  document.getElementById("userText").addEventListener("input",autoResizeInput);
+  const userText = document.getElementById("userText");
+
+  userText.addEventListener("input",autoResizeInput);
+
+  userText.addEventListener("keydown",function(event){
+    if(event.key === "Enter" && !event.shiftKey){
+      event.preventDefault();
+      sendText();
+    }
+  });
 });
 </script>
 
