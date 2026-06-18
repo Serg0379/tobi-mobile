@@ -106,7 +106,7 @@ body::before{
   margin:0 auto;
   height:100vh;
   min-height:100vh;
-  padding:112px 14px 125px;
+  padding:106px 14px 112px;
   display:flex;
   flex-direction:column;
 }
@@ -117,50 +117,55 @@ body::before{
   overflow-y:auto;
   overflow-x:hidden;
   scroll-behavior:smooth;
-  padding-bottom:10px;
+  padding-bottom:8px;
   -webkit-overflow-scrolling:touch;
 }
 
 .message{
-  border-radius:26px;
-  padding:18px;
-  margin-bottom:16px;
-  line-height:1.6;
-  font-size:18px;
+  border-radius:22px;
+  padding:12px 14px 9px;
+  margin-bottom:10px;
+  line-height:1.38;
+  font-size:15px;
   backdrop-filter:blur(22px);
-  box-shadow:0 12px 30px rgba(0,0,0,.08);
+  box-shadow:0 8px 22px rgba(0,0,0,.07);
   word-wrap:break-word;
   overflow-wrap:anywhere;
   white-space:pre-wrap;
 }
 
 .botMessage{
-  width:96%;
-  max-width:96%;
+  width:94%;
+  max-width:94%;
   background:rgba(255,255,255,.58);
   border:1px solid var(--border);
 }
 
 .userMessage{
-  width:75%;
-  max-width:75%;
+  width:74%;
+  max-width:74%;
   margin-left:auto;
   background:linear-gradient(135deg,var(--blue),var(--blue2));
   color:white;
+  font-size:15px;
+  padding:12px 15px;
 }
 
-.msgHeader{
+.messageText{
+  font-size:15px;
+  line-height:1.38;
+  color:#111827;
+}
+
+.botFooter{
+  margin-top:6px;
   display:flex;
-  justify-content:space-between;
+  justify-content:flex-end;
   align-items:center;
-  margin-bottom:12px;
-  font-size:17px;
-  font-weight:700;
-  color:var(--blue);
 }
 
 .msgTime{
-  font-size:14px;
+  font-size:11px;
   color:#64748b;
   font-weight:500;
 }
@@ -171,13 +176,13 @@ body::before{
   bottom:15px;
   transform:translateX(-50%);
   width:min(450px,calc(100vw - 24px));
-  padding:10px;
-  border-radius:26px;
+  padding:9px;
+  border-radius:24px;
   background:rgba(255,255,255,.62);
   backdrop-filter:blur(30px);
   box-shadow:0 15px 35px rgba(0,0,0,.1);
   display:grid;
-  grid-template-columns:44px 1fr 44px 44px;
+  grid-template-columns:42px 1fr 42px 42px;
   gap:8px;
   align-items:end;
   z-index:90;
@@ -185,13 +190,13 @@ body::before{
 
 textarea{
   width:100%;
-  min-height:42px;
-  max-height:120px;
+  min-height:40px;
+  max-height:110px;
   border:none;
   outline:none;
   background:transparent;
   resize:none;
-  font-size:17px;
+  font-size:16px;
   font-family:Arial,sans-serif;
   padding:10px 2px;
   color:#111827;
@@ -202,15 +207,15 @@ textarea::placeholder{
 }
 
 button,.fileLabel{
-  width:44px;
-  height:44px;
+  width:42px;
+  height:42px;
   border:none;
-  border-radius:16px;
+  border-radius:15px;
   cursor:pointer;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:20px;
+  font-size:19px;
   background:rgba(255,255,255,.72);
   box-shadow:0 8px 20px rgba(0,0,0,.08);
 }
@@ -332,7 +337,7 @@ input[type=file]{
   </div>
 
   <div class="robot">
-    <img src="./tobi-robot.jpg?v=10" alt="TOBI Robot">
+    <img src="./tobi-robot.jpg?v=11" alt="TOBI Robot">
   </div>
 </div>
 
@@ -536,11 +541,10 @@ function renderMessage(message){
   }else{
     div.className = "message botMessage";
     div.innerHTML = `
-      <div class="msgHeader">
-        <span>Ответ TOBI</span>
+      <div class="messageText">${escapeHtml(message.text)}</div>
+      <div class="botFooter">
         <span class="msgTime">${getMessageTime(message)}</span>
       </div>
-      <div>${escapeHtml(message.text)}</div>
     `;
   }
 
@@ -983,8 +987,8 @@ ${fileText}
 
 function autoResizeInput(){
   const textarea = document.getElementById("userText");
-  textarea.style.height = "42px";
-  textarea.style.height = Math.min(textarea.scrollHeight,120) + "px";
+  textarea.style.height = "40px";
+  textarea.style.height = Math.min(textarea.scrollHeight,110) + "px";
 }
 
 document.addEventListener("DOMContentLoaded",function(){
