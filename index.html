@@ -88,6 +88,7 @@ body::before{
   justify-content:center;
   box-shadow:none;
   overflow:visible;
+  font-size:32px;
 }
 
 .robot img{
@@ -330,11 +331,10 @@ input[type=file]{
     <div class="logoTitle">TOBI</div>
     <div class="logoSub">Личный помощник</div>
   </div>
+
   <div class="robot">
-  <img src="./tobi-robot.png?v=1" alt="">
-</div>
-  <img alt="TOBI Robot" src="data:image/webp;base64,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">
-</div>
+    <img src="./tobi-robot.png?v=3" alt="TOBI Robot" onerror="this.style.display='none'; this.parentElement.textContent='🤖';">
+  </div>
 </div>
 
 <div class="app">
