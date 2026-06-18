@@ -347,7 +347,7 @@ input[type=file]{
   </div>
 
   <div class="robot">
-    <img src="./tobi-robot.jpg?v=13" alt="TOBI Robot">
+    <img src="./tobi-robot.jpg?v=14" alt="TOBI Robot">
   </div>
 </div>
 
@@ -422,6 +422,7 @@ input[type=file]{
 <script>
 const MAKE_WEBHOOK_URL = "https://hook.us2.make.com/ieuyswwsxlrom238xqom6wuun9mgd47i";
 const TOBI_STORAGE_KEY = "tobi_chat_history_v4";
+const TOBI_LAST_DOCUMENT_KEY = "tobi_last_document_v1";
 
 const START_MESSAGE = `Сергей, я готов.
 
@@ -437,6 +438,43 @@ let isSending = false;
 let isListening = false;
 let lastSentText = "";
 let lastSentAt = 0;
+let lastDocumentText = "";
+
+function saveLastDocument(text){
+  lastDocumentText = String(text || "").trim();
+
+  try{
+    localStorage.setItem(TOBI_LAST_DOCUMENT_KEY,lastDocumentText);
+  }catch(e){
+    console.error("Ошибка сохранения последнего документа:",e);
+  }
+}
+
+function loadLastDocument(){
+  try{
+    lastDocumentText = localStorage.getItem(TOBI_LAST_DOCUMENT_KEY) || "";
+  }catch(e){
+    console.error("Ошибка загрузки последнего документа:",e);
+    lastDocumentText = "";
+  }
+}
+
+function buildContextForMake(currentText){
+  const lastMessages = chatHistory
+    .slice(-10)
+    .map(item => {
+      const role = item.role === "user" ? "Сергей" : "TOBI";
+      return role + ": " + item.text;
+    })
+    .join("\n\n");
+
+  return `Последние сообщения в чате:
+
+${lastMessages}
+
+Текущий запрос Сергея:
+${currentText}`;
+}
 
 function toggleMenu(){
   document.getElementById("menuOverlay").classList.toggle("open");
@@ -761,7 +799,9 @@ async function sendText(textFromVoice = null){
       },
       body:JSON.stringify({
         type:"text",
-        text:text
+        text:text,
+        context:buildContextForMake(text),
+        lastDocument:lastDocumentText
       })
     });
 
@@ -915,6 +955,8 @@ ${fileName}
   reader.onload = async function(event){
     const fileText = String(event.target.result || "").trim();
 
+    saveLastDocument(fileText);
+
     if(!fileText){
       addBotMessage(`Файл прочитан, но внутри нет текста:
 
@@ -955,7 +997,9 @@ ${fileText}
         },
         body:JSON.stringify({
           type:"text",
-          text:textForTobi
+          text:textForTobi,
+          context:buildContextForMake(textForTobi),
+          lastDocument:fileText
         })
       });
 
@@ -1000,6 +1044,7 @@ function autoResizeInput(){
 
 document.addEventListener("DOMContentLoaded",function(){
   loadMessages();
+  loadLastDocument();
 
   const userText = document.getElementById("userText");
 
