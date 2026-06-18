@@ -16,7 +16,6 @@
   --bg1:#edf4fb;
   --bg2:#d8e7f6;
   --bg3:#b7d2ee;
-  --glass:rgba(255,255,255,.55);
   --border:rgba(255,255,255,.45);
   --text:#111827;
   --muted:#64748b;
@@ -50,62 +49,53 @@ body::before{
   z-index:-1;
 }
 
-.app{
-  max-width:480px;
-  margin:0 auto;
-  min-height:100vh;
-  padding:18px 14px 120px;
-}
-
-.top{
+.header{
+  position:fixed;
+  top:0;
+  left:50%;
+  transform:translateX(-50%);
+  width:min(480px,100%);
+  height:96px;
+  padding:18px 18px 12px;
   display:flex;
   justify-content:space-between;
   align-items:center;
-  margin-bottom:16px;
-}
-
-.logoBlock{
-  display:flex;
-  align-items:center;
-  gap:12px;
-}
-
-.logoIcon{
-  width:50px;
-  height:50px;
-  border-radius:18px;
-  background:rgba(255,255,255,.55);
-  backdrop-filter:blur(20px);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:24px;
-  font-weight:900;
-  box-shadow:0 10px 25px rgba(0,0,0,.08);
+  background:rgba(232,242,252,.72);
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
+  z-index:80;
 }
 
 .logoTitle{
-  font-size:34px;
+  font-size:36px;
   font-weight:800;
+  line-height:1;
 }
 
 .logoSub{
-  font-size:17px;
+  font-size:18px;
   color:var(--muted);
-  margin-top:3px;
+  margin-top:6px;
 }
 
 .robot{
   width:64px;
   height:64px;
   border-radius:22px;
-  background:rgba(255,255,255,.58);
+  background:rgba(255,255,255,.62);
   backdrop-filter:blur(20px);
   display:flex;
   align-items:center;
   justify-content:center;
   box-shadow:0 10px 25px rgba(0,0,0,.08);
   font-size:32px;
+}
+
+.app{
+  max-width:480px;
+  margin:0 auto;
+  min-height:100vh;
+  padding:112px 14px 125px;
 }
 
 .chat{
@@ -169,7 +159,7 @@ body::before{
   grid-template-columns:44px 1fr 44px 44px;
   gap:8px;
   align-items:end;
-  z-index:50;
+  z-index:90;
 }
 
 textarea{
@@ -211,20 +201,6 @@ button,.fileLabel{
 
 input[type=file]{
   display:none;
-}
-
-.menuButton{
-  position:fixed;
-  top:18px;
-  left:18px;
-  width:42px;
-  height:42px;
-  border-radius:15px;
-  border:none;
-  background:rgba(255,255,255,.65);
-  backdrop-filter:blur(20px);
-  font-size:24px;
-  z-index:100;
 }
 
 .status{
@@ -318,22 +294,15 @@ input[type=file]{
 
 <body>
 
-<button class="menuButton" onclick="toggleMenu()">☰</button>
+<div class="header">
+  <div>
+    <div class="logoTitle">TOBI</div>
+    <div class="logoSub">Личный помощник</div>
+  </div>
+  <div class="robot">🤖</div>
+</div>
 
 <div class="app">
-
-  <div class="top">
-    <div class="logoBlock">
-      <div class="logoIcon">⌬</div>
-      <div>
-        <div class="logoTitle">TOBI</div>
-        <div class="logoSub">Личный помощник</div>
-      </div>
-    </div>
-
-    <div class="robot">🤖</div>
-  </div>
-
   <div class="chat" id="chat">
     <div class="message botMessage">
       <div class="msgHeader">
@@ -350,24 +319,17 @@ input[type=file]{
 «Сделай текст запроса в Сбербанк»</div>
     </div>
   </div>
-
 </div>
 
 <div class="inputPanel">
   <label class="fileLabel">
     📎
-    <input
-      type="file"
-      id="fileInput"
-      accept=".txt,text/plain"
-      onchange="handleFile()"
-    />
+    <input type="file" id="fileInput" accept=".txt,text/plain" onchange="handleFile()"/>
   </label>
 
   <textarea id="userText" placeholder="Введите запрос..."></textarea>
 
   <button onclick="startVoice()">🎙</button>
-
   <button class="sendBtn" onclick="sendText()">➤</button>
 </div>
 
@@ -375,13 +337,11 @@ input[type=file]{
 
 <div class="menuOverlay" id="menuOverlay">
   <div class="menuCard">
-
     <div class="menuTop">
       <div>
         <div class="menuTitle">TOBI Center</div>
         <div class="menuSub">Закрытый центр управления</div>
       </div>
-
       <button class="closeBtn" onclick="toggleMenu()">×</button>
     </div>
 
@@ -422,7 +382,6 @@ input[type=file]{
         <div class="menuDesc">Связки и сервисы</div>
       </div>
     </div>
-
   </div>
 </div>
 
@@ -504,7 +463,7 @@ function cleanAnswer(value){
 
   let text = String(value).trim();
 
-  for(let i=0;i<3;i++){
+  for(let i=0;i<5;i++){
     try{
       const parsed = JSON.parse(text);
 
@@ -525,15 +484,28 @@ function cleanAnswer(value){
   }
 
   text = text
-    .replace(/^\s*\{\s*"answer"\s*:\s*"/i,"")
-    .replace(/^\s*\{\s*"response"\s*:\s*"/i,"")
-    .replace(/^\s*\{\s*"text"\s*:\s*"/i,"")
-    .replace(/"\s*\}\s*$/,"")
+    .replace(/^\s*\{\s*["']answer["']\s*:\s*["']?/i,"")
+    .replace(/^\s*\{\s*["']response["']\s*:\s*["']?/i,"")
+    .replace(/^\s*\{\s*["']text["']\s*:\s*["']?/i,"")
+    .replace(/^\s*\{\s*["']result["']\s*:\s*["']?/i,"")
+    .replace(/["']?\s*\}\s*$/,"")
     .replace(/\\n/g,"\n")
     .replace(/\\"/g,'"')
     .replace(/\\\\/g,"\\");
 
   return text.trim();
+}
+
+function isMenuCommand(text){
+  const t = text.toLowerCase().trim();
+  return (
+    t === "открой меню" ||
+    t === "открыть меню" ||
+    t === "тоби открой меню" ||
+    t === "тоби меню" ||
+    t === "центр управления" ||
+    t === "открой центр управления"
+  );
 }
 
 async function sendText(){
@@ -548,6 +520,12 @@ async function sendText(){
   addUserMessage(text);
   input.value = "";
   autoResizeInput();
+
+  if(isMenuCommand(text)){
+    toggleMenu();
+    addBotMessage("Центр управления открыт.");
+    return;
+  }
 
   document.getElementById("status").innerText = "TOBI думает...";
 
@@ -632,7 +610,7 @@ async function handleFile(){
 Вы выбрали:
 ${fileName}
 
-DOCX, PDF и фото подключим следующим шагом отдельно, чтобы не ломать рабочий TOBI.`);
+DOCX, PDF и фото подключим следующим шагом отдельно.`);
     document.getElementById("status").innerText = "Пока доступен TXT.";
     fileInput.value = "";
     return;
