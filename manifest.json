@@ -1,0 +1,13 @@
+{
+  "name": "TobiMasterBot",
+  "short_name": "Tobi",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0E1621",
+  "theme_color": "#17212B",
+  "icons": [
+    { "src": "./tobi-avatar.jpg", "sizes": "512x512", "type": "image/jpeg", "purpose": "any" },
+    { "src": "./tobi-avatar.jpg", "sizes": "192x192", "type": "image/jpeg", "purpose": "any" }
+  ]
+}
