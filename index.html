@@ -461,12 +461,30 @@ function scrollToBottom(){
   setTimeout(()=>{ chat.scrollTop = chat.scrollHeight; }, 50);
 }
 
+let statusPoll = null;
+
 function setSending(value){
   isSending = value;
   document.getElementById("sendBtn").disabled = value;
   const status = document.getElementById("headerStatus");
-  status.textContent = value ? "печатает..." : "в сети";
-  if(value) scrollToBottom();
+
+  if(value){
+    status.textContent = "думает...";
+    scrollToBottom();
+    statusPoll = setInterval(pollStatus, 900);
+  }else{
+    status.textContent = "в сети";
+    if(statusPoll){ clearInterval(statusPoll); statusPoll = null; }
+  }
+}
+
+async function pollStatus(){
+  try{
+    const data = await apiGet("/api/status");
+    document.getElementById("headerStatus").textContent = data.status;
+  }catch(e){
+    // тихо игнорируем — не критично для опроса статуса
+  }
 }
 
 function autoResizeInput(){
