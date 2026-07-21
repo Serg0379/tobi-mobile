@@ -234,6 +234,91 @@ input[type=file]{display:none;}
   color:var(--muted);
   padding:2px 10px 6px;
 }
+
+.menuBtn{
+  margin-left:auto;
+  background:transparent;
+  color:#fff;
+  font-size:22px;
+}
+
+.menuOverlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.35);
+  z-index:300;
+  display:none;
+  align-items:flex-end;
+}
+
+.menuOverlay.open{display:flex;}
+
+.menuSheet{
+  background:#fff;
+  width:100%;
+  max-height:80vh;
+  border-radius:16px 16px 0 0;
+  padding:16px;
+  overflow-y:auto;
+}
+
+.menuTop{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:12px;
+}
+
+.menuTop h2{font-size:18px;}
+
+.menuTabs{
+  display:flex;
+  gap:8px;
+  margin-bottom:12px;
+}
+
+.menuTab{
+  flex:1;
+  border:1px solid #ddd;
+  border-radius:8px;
+  padding:8px;
+  text-align:center;
+  font-size:13px;
+  background:#f5f5f5;
+  cursor:pointer;
+}
+
+.menuTab.active{
+  background:var(--tg-blue);
+  color:#fff;
+  border-color:var(--tg-blue);
+}
+
+.menuBody{
+  font-size:14px;
+  white-space:pre-wrap;
+  line-height:1.4;
+  color:#222;
+}
+
+.reminderItem{
+  border-bottom:1px solid #eee;
+  padding:8px 0;
+}
+
+.reminderName{font-weight:600;}
+.reminderWhen{color:var(--muted);font-size:13px;}
+
+.logoutBtn{
+  width:100%;
+  border:none;
+  border-radius:10px;
+  padding:12px;
+  background:#e53935;
+  color:#fff;
+  font-size:15px;
+  margin-top:8px;
+}
 </style>
 </head>
 
@@ -255,6 +340,22 @@ input[type=file]{display:none;}
   <div class="headerInfo">
     <div class="headerName">Tobi</div>
     <div class="headerStatus" id="headerStatus">в сети</div>
+  </div>
+  <button class="menuBtn" onclick="openMenu()">☰</button>
+</div>
+
+<div class="menuOverlay" id="menuOverlay" onclick="closeMenuOnOverlay(event)">
+  <div class="menuSheet">
+    <div class="menuTop">
+      <h2>Tobi Center</h2>
+      <button onclick="closeMenu()" style="background:none;color:#333;font-size:22px;">×</button>
+    </div>
+    <div class="menuTabs">
+      <div class="menuTab active" data-tab="memory" onclick="switchTab('memory')">Память</div>
+      <div class="menuTab" data-tab="reminders" onclick="switchTab('reminders')">Напоминания</div>
+      <div class="menuTab" data-tab="settings" onclick="switchTab('settings')">Настройки</div>
+    </div>
+    <div class="menuBody" id="menuBody">Загрузка...</div>
   </div>
 </div>
 
@@ -446,6 +547,68 @@ function submitToken(){
   localStorage.setItem(TOKEN_KEY, val);
   document.getElementById("gate").classList.add("hidden");
   loadMessages();
+}
+
+function openMenu(){
+  document.getElementById("menuOverlay").classList.add("open");
+  switchTab("memory");
+}
+
+function closeMenu(){
+  document.getElementById("menuOverlay").classList.remove("open");
+}
+
+function closeMenuOnOverlay(e){
+  if(e.target.id === "menuOverlay") closeMenu();
+}
+
+async function apiGet(path){
+  const res = await fetch(API_BASE + path, { headers:{ "x-tobi-token": tobiToken } });
+  if(!res.ok) throw new Error("Ошибка: " + res.status);
+  return res.json();
+}
+
+function formatReminderTime(r){
+  if(r.type === "once") return new Date(r.at).toLocaleString("ru-RU");
+  const time = String(r.hour).padStart(2,"0") + ":" + String(r.minute||0).padStart(2,"0");
+  if(r.type === "daily") return "каждый день в " + time;
+  if(r.type === "weekly"){
+    const days = ["","пн","вт","ср","чт","пт","сб","вс"];
+    return "по " + (r.weekdays||[]).map(d=>days[d]).join(", ") + " в " + time;
+  }
+  return time;
+}
+
+async function switchTab(tab){
+  document.querySelectorAll(".menuTab").forEach(el => el.classList.toggle("active", el.dataset.tab === tab));
+  const body = document.getElementById("menuBody");
+  body.textContent = "Загрузка...";
+
+  try{
+    if(tab === "memory"){
+      const data = await apiGet("/api/memory");
+      body.textContent = data.text;
+    }else if(tab === "reminders"){
+      const data = await apiGet("/api/reminders");
+      if(!data.reminders.length){
+        body.textContent = "Активных напоминаний нет.";
+      }else{
+        body.innerHTML = data.reminders.map(r =>
+          '<div class="reminderItem"><div class="reminderName">' + escapeHtml(r.name) +
+          '</div><div class="reminderWhen">' + escapeHtml(formatReminderTime(r)) + '</div></div>'
+        ).join("");
+      }
+    }else if(tab === "settings"){
+      body.innerHTML = '<button class="logoutBtn" onclick="logout()">Выйти (сбросить код доступа)</button>';
+    }
+  }catch(e){
+    body.textContent = "Ошибка загрузки: " + e.message;
+  }
+}
+
+function logout(){
+  localStorage.removeItem(TOKEN_KEY);
+  location.reload();
 }
 
 document.addEventListener("DOMContentLoaded", () => {
