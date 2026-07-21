@@ -384,7 +384,7 @@ input[type=file]{display:none;}
 <div class="inputPanel">
   <label class="fileLabel">
     📎
-    <input type="file" id="fileInput" accept=".txt,text/plain" onchange="handleFile()"/>
+    <input type="file" id="fileInput" accept=".txt,text/plain,.pdf,application/pdf,image/jpeg,image/png,image/webp" onchange="handleFile()"/>
   </label>
 
   <textarea id="userText" placeholder="Сообщение"></textarea>
@@ -602,36 +602,54 @@ function startVoice(){
   };
 }
 
+const SUPPORTED_MIME = ["image/jpeg","image/png","image/webp","application/pdf"];
+
+function fileToBase64(file){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(",")[1] || "");
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 async function handleFile(){
   const fileInput = document.getElementById("fileInput");
   const file = fileInput.files[0];
   if(!file) return;
 
   const isTxt = file.name.toLowerCase().endsWith(".txt") || file.type === "text/plain";
-  if(!isTxt){
-    addMessage("bot", "Пока читаю только TXT-файлы.");
-    fileInput.value = "";
-    return;
-  }
 
-  const reader = new FileReader();
-  reader.onload = async (e) => {
-    const fileText = String(e.target.result || "").trim();
-    addMessage("user", "📎 Файл: " + file.name);
-    setSending(true);
-    try{
+  addMessage("user", "📎 Файл: " + file.name);
+  setSending(true);
+
+  try{
+    if(isTxt){
+      const text = await file.text();
       const answer = await callTobi(
-        `Прикреплён файл ${file.name}. Содержимое:\n\n${fileText}\n\nПроанализируй и дай короткий вывод.`
+        `Прикреплён файл ${file.name}. Содержимое:\n\n${text.trim()}\n\nПроанализируй и дай короткий вывод.`
       );
       if(answer !== null) addMessage("bot", answer);
-    }catch(err){
-      addMessage("bot", "Ошибка при отправке файла: " + err.message);
-    }finally{
-      setSending(false);
-      fileInput.value = "";
+    }else if(SUPPORTED_MIME.includes(file.type)){
+      const dataBase64 = await fileToBase64(file);
+      const res = await fetch(API_BASE + "/api/upload", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json", "x-tobi-token": tobiToken },
+        body: JSON.stringify({ filename:file.name, mimeType:file.type, dataBase64 })
+      });
+      if(res.status === 401){ localStorage.removeItem(TOKEN_KEY); location.reload(); return; }
+      if(!res.ok) throw new Error("Ошибка сервера: " + res.status);
+      const data = await res.json();
+      addMessage("bot", data.answer || "Пустой ответ.");
+    }else{
+      addMessage("bot", "Этот формат пока не поддерживается. Сейчас можно: TXT, PDF, JPG, PNG, WEBP.");
     }
-  };
-  reader.readAsText(file, "UTF-8");
+  }catch(err){
+    addMessage("bot", "Ошибка при отправке файла: " + err.message);
+  }finally{
+    setSending(false);
+    fileInput.value = "";
+  }
 }
 
 function submitToken(){
