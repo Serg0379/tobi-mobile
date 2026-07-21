@@ -195,7 +195,7 @@ body{
   border-top:1px solid #0B121A;
   padding:8px 8px;
   display:grid;
-  grid-template-columns:40px 1fr 40px;
+  grid-template-columns:40px 1fr 40px 40px;
   gap:6px;
   align-items:end;
   z-index:90;
@@ -230,6 +230,11 @@ button,.fileLabel{
 
 .sendBtn{
   background:var(--tg-blue);
+  color:#fff;
+}
+
+.micListening{
+  background:#e53935;
   color:#fff;
 }
 
@@ -384,6 +389,7 @@ input[type=file]{display:none;}
 
   <textarea id="userText" placeholder="Сообщение"></textarea>
 
+  <button id="voiceBtn" onclick="startVoice()">🎙</button>
   <button id="sendBtn" class="sendBtn" onclick="sendText()">➤</button>
 </div>
 
@@ -518,6 +524,63 @@ async function sendText(voiceText){
   }finally{
     setSending(false);
   }
+}
+
+let isListening = false;
+
+function startVoice(){
+  if(isListening || isSending) return;
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SpeechRecognition){
+    addMessage("bot", "Голосовой ввод поддерживается через Chrome.");
+    return;
+  }
+
+  const voiceBtn = document.getElementById("voiceBtn");
+  const input = document.getElementById("userText");
+
+  const recognition = new SpeechRecognition();
+  recognition.lang = "ru-RU";
+  recognition.interimResults = true;
+  recognition.continuous = false;
+  recognition.maxAlternatives = 1;
+
+  let finalTranscript = "";
+  let bestTranscript = "";
+
+  isListening = true;
+  voiceBtn.classList.add("micListening");
+  recognition.start();
+
+  recognition.onresult = function(event){
+    let interimTranscript = "";
+    for(let i = event.resultIndex; i < event.results.length; i++){
+      const transcript = event.results[i][0].transcript.trim();
+      if(event.results[i].isFinal){
+        finalTranscript += " " + transcript;
+      }else{
+        interimTranscript += " " + transcript;
+      }
+    }
+    bestTranscript = (finalTranscript || interimTranscript).trim();
+    if(bestTranscript){
+      input.value = bestTranscript;
+      autoResizeInput();
+    }
+  };
+
+  recognition.onerror = function(){
+    isListening = false;
+    voiceBtn.classList.remove("micListening");
+  };
+
+  recognition.onend = function(){
+    isListening = false;
+    voiceBtn.classList.remove("micListening");
+    const text = (finalTranscript || bestTranscript).trim();
+    if(text) sendText(text);
+  };
 }
 
 async function handleFile(){
