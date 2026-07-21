@@ -105,7 +105,7 @@ body{
 .header{
   position:fixed;
   top:0;left:0;right:0;
-  height:60px;
+  height:76px;
   background:var(--header-bg);
   color:#fff;
   display:flex;
@@ -117,7 +117,7 @@ body{
 }
 
 .headerAvatar{
-  width:48px;height:48px;border-radius:50%;
+  width:60px;height:60px;border-radius:50%;
   overflow:hidden;flex-shrink:0;
   background:#fff;
 }
@@ -131,7 +131,7 @@ body{
 /* ---------- Chat area ---------- */
 .app{
   height:100%;
-  padding:70px 0 74px;
+  padding:86px 0 74px;
   display:flex;
   flex-direction:column;
 }
@@ -347,11 +347,11 @@ input[type=file]{display:none;}
 </div>
 
 <div class="header">
+  <div class="headerAvatar"><img src="./tobi-avatar.jpg" alt="Tobi"></div>
   <div class="headerInfo">
     <div class="headerName">TobiMasterBot</div>
     <div class="headerStatus" id="headerStatus">в сети</div>
   </div>
-  <div class="headerAvatar"><img src="./tobi-avatar.jpg" alt="Tobi"></div>
   <button class="menuBtn" onclick="openMenu()">☰</button>
 </div>
 
