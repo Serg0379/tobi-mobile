@@ -187,6 +187,24 @@ body{
   margin-bottom:4px;
 }
 
+.msgMeta{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  background:rgba(255,255,255,.08);
+  border-radius:10px;
+  padding:2px 8px;
+  font-size:11px;
+  color:var(--muted);
+  margin-top:4px;
+}
+
+.msgTicks{
+  color:rgba(255,255,255,.75);
+  font-size:11px;
+  margin-left:3px;
+}
+
 .userMessage{
   background:var(--out-bubble);
   border-top-right-radius:2px;
@@ -458,19 +476,29 @@ function renderMessage(m){
   div.className = "message " + (m.role === "user" ? "userMessage" : "botMessage");
   const img = m.imageUrl ? '<img src="' + m.imageUrl + '" alt="фото" class="msgImage">' : "";
   const textHtml = m.text ? escapeHtml(m.text).replace(/\n/g,"<br>") : "";
-  div.innerHTML = img + textHtml + '<span class="msgTime">' + (m.time || getTime()) + '</span>';
+  const meta = m.meta ? '<div class="msgMeta">⏱ ' + m.meta.seconds + 's · cache ' + m.meta.cachePct + '%</div>' : "";
+  const ticks = m.role === "user" ? '<span class="msgTicks" data-ticks>' + (m.delivered ? "✓✓" : "✓") + '</span>' : "";
+  div.innerHTML = img + textHtml + (meta ? "<br>" + meta : "") + '<span class="msgTime">' + (m.time || getTime()) + ticks + '</span>';
   chat.appendChild(div);
   return div;
 }
 
-function addMessage(role, text, imageUrl){
+function addMessage(role, text, imageUrl, meta){
   const m = {role, text: String(text||"").trim(), time:getTime()};
   if(imageUrl) m.imageUrl = imageUrl;
-  if(!m.text && !m.imageUrl) return;
-  chatHistory.push({role:m.role, text:m.text, time:m.time});
+  if(meta) m.meta = meta;
+  if(!m.text && !m.imageUrl) return null;
+  chatHistory.push({role:m.role, text:m.text, time:m.time, meta:m.meta});
   saveMessages();
-  renderMessage(m);
+  const el = renderMessage(m);
   scrollToBottom();
+  return el;
+}
+
+function markDelivered(el){
+  if(!el) return;
+  const ticks = el.querySelector("[data-ticks]");
+  if(ticks) ticks.textContent = "✓✓";
 }
 
 function scrollToBottom(){
@@ -530,8 +558,7 @@ async function callTobi(message){
     throw new Error("Ошибка сервера: " + res.status);
   }
 
-  const data = await res.json();
-  return data.answer;
+  return res.json();
 }
 
 async function sendText(voiceText){
@@ -540,14 +567,15 @@ async function sendText(voiceText){
   const text = String(voiceText !== undefined ? voiceText : input.value).trim();
   if(!text) return;
 
-  addMessage("user", text);
+  const userEl = addMessage("user", text);
   input.value = "";
   autoResizeInput();
 
   setSending(true);
   try{
-    const answer = await callTobi(text);
-    if(answer !== null) addMessage("bot", answer || "Пустой ответ.");
+    const data = await callTobi(text);
+    markDelivered(userEl);
+    if(data !== null) addMessage("bot", data.answer || "Пустой ответ.", null, data.meta);
   }catch(e){
     addMessage("bot", "Ошибка соединения: " + e.message);
   }finally{
@@ -631,20 +659,22 @@ async function handleFile(){
   const isTxt = file.name.toLowerCase().endsWith(".txt") || file.type === "text/plain";
   const isImage = file.type.startsWith("image/");
 
+  let userEl;
   if(isImage){
-    addMessage("user", "", URL.createObjectURL(file));
+    userEl = addMessage("user", "", URL.createObjectURL(file));
   }else{
-    addMessage("user", "📎 Файл: " + file.name);
+    userEl = addMessage("user", "📎 Файл: " + file.name);
   }
   setSending(true);
 
   try{
     if(isTxt){
       const text = await file.text();
-      const answer = await callTobi(
+      const data = await callTobi(
         `Прикреплён файл ${file.name}. Содержимое:\n\n${text.trim()}\n\nПроанализируй и дай короткий вывод.`
       );
-      if(answer !== null) addMessage("bot", answer);
+      markDelivered(userEl);
+      if(data !== null) addMessage("bot", data.answer || "Пустой ответ.", null, data.meta);
     }else if(SUPPORTED_MIME.includes(file.type)){
       const dataBase64 = await fileToBase64(file);
       const res = await fetch(API_BASE + "/api/upload", {
@@ -655,7 +685,8 @@ async function handleFile(){
       if(res.status === 401){ localStorage.removeItem(TOKEN_KEY); location.reload(); return; }
       if(!res.ok) throw new Error("Ошибка сервера: " + res.status);
       const data = await res.json();
-      addMessage("bot", data.answer || "Пустой ответ.");
+      markDelivered(userEl);
+      addMessage("bot", data.answer || "Пустой ответ.", null, data.meta);
     }else{
       addMessage("bot", "Этот формат пока не поддерживается. Сейчас можно: TXT, PDF, JPG, PNG, WEBP.");
     }
