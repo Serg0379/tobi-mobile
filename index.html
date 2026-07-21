@@ -180,6 +180,13 @@ body{
   margin-right:auto;
 }
 
+.msgImage{
+  display:block;
+  max-width:100%;
+  border-radius:8px;
+  margin-bottom:4px;
+}
+
 .userMessage{
   background:var(--out-bubble);
   border-top-right-radius:2px;
@@ -449,15 +456,18 @@ function renderMessage(m){
   const chat = document.getElementById("chat");
   const div = document.createElement("div");
   div.className = "message " + (m.role === "user" ? "userMessage" : "botMessage");
-  div.innerHTML = escapeHtml(m.text).replace(/\n/g,"<br>") + '<span class="msgTime">' + (m.time || getTime()) + '</span>';
+  const img = m.imageUrl ? '<img src="' + m.imageUrl + '" alt="фото" class="msgImage">' : "";
+  const textHtml = m.text ? escapeHtml(m.text).replace(/\n/g,"<br>") : "";
+  div.innerHTML = img + textHtml + '<span class="msgTime">' + (m.time || getTime()) + '</span>';
   chat.appendChild(div);
   return div;
 }
 
-function addMessage(role, text){
+function addMessage(role, text, imageUrl){
   const m = {role, text: String(text||"").trim(), time:getTime()};
-  if(!m.text) return;
-  chatHistory.push(m);
+  if(imageUrl) m.imageUrl = imageUrl;
+  if(!m.text && !m.imageUrl) return;
+  chatHistory.push({role:m.role, text:m.text, time:m.time});
   saveMessages();
   renderMessage(m);
   scrollToBottom();
@@ -619,8 +629,13 @@ async function handleFile(){
   if(!file) return;
 
   const isTxt = file.name.toLowerCase().endsWith(".txt") || file.type === "text/plain";
+  const isImage = file.type.startsWith("image/");
 
-  addMessage("user", "📎 Файл: " + file.name);
+  if(isImage){
+    addMessage("user", "", URL.createObjectURL(file));
+  }else{
+    addMessage("user", "📎 Файл: " + file.name);
+  }
   setSending(true);
 
   try{
