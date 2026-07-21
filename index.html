@@ -244,12 +244,6 @@ button:disabled{opacity:.5;cursor:not-allowed;}
 
 input[type=file]{display:none;}
 
-.typing{
-  font-size:13px;
-  color:var(--muted);
-  padding:2px 10px 6px;
-}
-
 .menuBtn{
   margin-left:auto;
   background:transparent;
@@ -378,7 +372,6 @@ input[type=file]{display:none;}
 
 <div class="app">
   <div class="chat" id="chat"></div>
-  <div class="typing" id="typing" style="display:none;">Tobi печатает... (может занять до минуты — общая история с Telegram)</div>
 </div>
 
 <div class="inputPanel">
@@ -471,7 +464,8 @@ function scrollToBottom(){
 function setSending(value){
   isSending = value;
   document.getElementById("sendBtn").disabled = value;
-  document.getElementById("typing").style.display = value ? "block" : "none";
+  const status = document.getElementById("headerStatus");
+  status.textContent = value ? "печатает..." : "в сети";
   if(value) scrollToBottom();
 }
 
