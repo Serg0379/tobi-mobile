@@ -148,17 +148,9 @@ body{
   overflow-y:auto;
   padding:10px 10px 4px;
   background-color:var(--chat-bg);
-  background-image:
-    radial-gradient(circle at 10% 8%, rgba(255,255,255,.05) 2px, transparent 2.5px),
-    radial-gradient(circle at 35% 25%, rgba(255,255,255,.04) 1.5px, transparent 2px),
-    radial-gradient(circle at 60% 12%, rgba(255,255,255,.05) 2px, transparent 2.5px),
-    radial-gradient(circle at 85% 30%, rgba(255,255,255,.04) 1.5px, transparent 2px),
-    radial-gradient(circle at 15% 55%, rgba(255,255,255,.04) 1.5px, transparent 2px),
-    radial-gradient(circle at 45% 65%, rgba(255,255,255,.05) 2px, transparent 2.5px),
-    radial-gradient(circle at 75% 75%, rgba(255,255,255,.04) 1.5px, transparent 2px),
-    radial-gradient(circle at 25% 90%, rgba(255,255,255,.05) 2px, transparent 2.5px),
-    radial-gradient(circle at 92% 88%, rgba(255,255,255,.04) 1.5px, transparent 2px);
-  background-size:220px 220px;
+  background-image:url('./chat-bg.png');
+  background-repeat:repeat;
+  background-size:340px 340px;
 }
 
 .message{
@@ -190,14 +182,18 @@ body{
 .msgMeta{
   display:inline-flex;
   align-items:center;
-  gap:4px;
-  background:rgba(255,255,255,.08);
-  border-radius:10px;
-  padding:2px 8px;
-  font-size:11px;
-  color:var(--muted);
-  margin-top:4px;
+  gap:6px;
+  background:#1C2733;
+  border-left:4px solid #4FC96A;
+  border-radius:6px;
+  padding:5px 10px 5px 8px;
+  font-size:13px;
+  color:#E9EDF1;
+  margin-top:6px;
 }
+
+.msgMeta .cachePct{color:#7BDB8F;}
+.msgMeta .quoteMark{color:#4FC96A;font-size:16px;margin-left:4px;}
 
 .msgTicks{
   color:rgba(255,255,255,.75);
@@ -476,7 +472,7 @@ function renderMessage(m){
   div.className = "message " + (m.role === "user" ? "userMessage" : "botMessage");
   const img = m.imageUrl ? '<img src="' + m.imageUrl + '" alt="фото" class="msgImage">' : "";
   const textHtml = m.text ? escapeHtml(m.text).replace(/\n/g,"<br>") : "";
-  const meta = m.meta ? '<div class="msgMeta">⏱ ' + m.meta.seconds + 's · cache ' + m.meta.cachePct + '%</div>' : "";
+  const meta = m.meta ? '<div class="msgMeta">🕐 ' + m.meta.seconds + 's · cache <span class="cachePct">' + m.meta.cachePct + '%</span><span class="quoteMark">”</span></div>' : "";
   const ticks = m.role === "user" ? '<span class="msgTicks" data-ticks>' + (m.delivered ? "✓✓" : "✓") + '</span>' : "";
   div.innerHTML = img + textHtml + (meta ? "<br>" + meta : "") + '<span class="msgTime">' + (m.time || getTime()) + ticks + '</span>';
   chat.appendChild(div);
