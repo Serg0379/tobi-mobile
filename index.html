@@ -2,357 +2,265 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TOBI Mobile</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Tobi</title>
 
 <style>
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-}
+*{margin:0;padding:0;box-sizing:border-box;}
 
 :root{
-  --bg1:#edf4fb;
-  --bg2:#d8e7f6;
-  --bg3:#b7d2ee;
-  --border:rgba(255,255,255,.45);
-  --text:#111827;
-  --muted:#64748b;
-  --blue:#4b7cff;
-  --blue2:#6fa7ff;
+  --tg-blue:#2AABEE;
+  --tg-blue2:#229ED9;
+  --header-bg:#517DA2;
+  --chat-bg:#DAD8CF;
+  --out-bubble:#EFFFDE;
+  --in-bubble:#FFFFFF;
+  --text:#000000;
+  --muted:#6D6D71;
 }
 
-html,body{
-  height:100%;
-  min-height:100%;
-}
+html,body{height:100%;}
 
 body{
-  font-family:Arial,sans-serif;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  background:var(--chat-bg);
   color:var(--text);
-  background:
-    radial-gradient(circle at 15% 20%,rgba(255,255,255,.8),transparent 25%),
-    radial-gradient(circle at 80% 15%,rgba(111,167,255,.4),transparent 30%),
-    linear-gradient(180deg,var(--bg1),var(--bg2),var(--bg3));
   overflow:hidden;
 }
 
-body::before{
-  content:"";
+/* ---------- Login gate ---------- */
+.gate{
   position:fixed;
   inset:0;
-  background:
-    repeating-linear-gradient(90deg,rgba(255,255,255,.08) 0px,rgba(255,255,255,.08) 1px,transparent 1px,transparent 80px),
-    repeating-linear-gradient(0deg,rgba(255,255,255,.05) 0px,rgba(255,255,255,.05) 1px,transparent 1px,transparent 80px);
-  pointer-events:none;
-  z-index:-1;
-}
-
-.header{
-  position:fixed;
-  top:0;
-  left:50%;
-  transform:translateX(-50%);
-  width:min(480px,100%);
-  height:82px;
-  padding:12px 16px 10px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  background:rgba(232,242,252,.72);
-  backdrop-filter:blur(24px);
-  -webkit-backdrop-filter:blur(24px);
-  z-index:80;
-}
-
-.logoTitle{
-  font-size:30px;
-  font-weight:800;
-  line-height:1;
-}
-
-.logoSub{
-  font-size:15px;
-  color:var(--muted);
-  margin-top:4px;
-  line-height:1.1;
-}
-
-.robot{
-  width:64px;
-  height:64px;
-  border-radius:50%;
-  background:transparent;
+  background:linear-gradient(180deg,var(--tg-blue),var(--tg-blue2));
   display:flex;
   align-items:center;
   justify-content:center;
-  box-shadow:none;
-  overflow:visible;
-  flex-shrink:0;
+  z-index:500;
+  padding:20px;
 }
 
-.robot img{
+.gate.hidden{display:none;}
+
+.gateCard{
+  background:#fff;
+  width:100%;
+  max-width:340px;
+  border-radius:16px;
+  padding:28px 22px;
+  text-align:center;
+  box-shadow:0 20px 50px rgba(0,0,0,.25);
+}
+
+.gateCard img{
   width:72px;
   height:72px;
-  display:block;
-  object-fit:contain;
   border-radius:50%;
-  filter:
-    drop-shadow(0 0 10px rgba(75,124,255,.28))
-    drop-shadow(0 0 18px rgba(170,90,255,.18));
+  margin-bottom:14px;
 }
 
+.gateCard h1{
+  font-size:20px;
+  margin-bottom:6px;
+}
+
+.gateCard p{
+  font-size:14px;
+  color:var(--muted);
+  margin-bottom:18px;
+}
+
+.gateCard input{
+  width:100%;
+  border:1px solid #ddd;
+  border-radius:10px;
+  padding:12px 14px;
+  font-size:15px;
+  margin-bottom:12px;
+  outline:none;
+}
+
+.gateCard input:focus{border-color:var(--tg-blue);}
+
+.gateCard button{
+  width:100%;
+  border:none;
+  border-radius:10px;
+  padding:12px;
+  background:var(--tg-blue);
+  color:#fff;
+  font-size:15px;
+  font-weight:600;
+  cursor:pointer;
+}
+
+.gateError{
+  color:#e53935;
+  font-size:13px;
+  margin-bottom:10px;
+  display:none;
+}
+
+/* ---------- Header (Telegram-style chat header) ---------- */
+.header{
+  position:fixed;
+  top:0;left:0;right:0;
+  height:60px;
+  background:var(--header-bg);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:0 14px;
+  z-index:80;
+  box-shadow:0 1px 3px rgba(0,0,0,.2);
+}
+
+.headerAvatar{
+  width:40px;height:40px;border-radius:50%;
+  overflow:hidden;flex-shrink:0;
+  background:#fff;
+}
+
+.headerAvatar img{width:100%;height:100%;object-fit:cover;}
+
+.headerInfo{display:flex;flex-direction:column;line-height:1.2;}
+.headerName{font-size:16px;font-weight:600;}
+.headerStatus{font-size:12.5px;color:rgba(255,255,255,.75);}
+
+/* ---------- Chat area ---------- */
 .app{
-  max-width:480px;
-  margin:0 auto;
-  height:100vh;
-  min-height:100vh;
-  padding:90px 14px 106px;
+  height:100%;
+  padding:70px 0 74px;
   display:flex;
   flex-direction:column;
 }
 
 .chat{
-  width:100%;
   flex:1;
   overflow-y:auto;
-  overflow-x:hidden;
-  scroll-behavior:smooth;
-  padding-top:2px;
-  padding-bottom:8px;
-  -webkit-overflow-scrolling:touch;
+  padding:10px 10px 4px;
+  background:var(--chat-bg);
+  background-image:
+    radial-gradient(circle at 20% 10%,rgba(255,255,255,.25),transparent 30%),
+    radial-gradient(circle at 80% 90%,rgba(255,255,255,.2),transparent 30%);
 }
 
 .message{
-  position:relative;
-  border-radius:22px;
-  margin-bottom:10px;
-  backdrop-filter:blur(22px);
-  box-shadow:0 8px 22px rgba(0,0,0,.07);
+  max-width:78%;
+  margin-bottom:6px;
+  padding:7px 10px 8px;
+  border-radius:10px;
+  font-size:15px;
+  line-height:1.35;
+  white-space:pre-wrap;
   word-wrap:break-word;
-  overflow-wrap:anywhere;
+  position:relative;
+  box-shadow:0 1px 1px rgba(0,0,0,.08);
 }
 
 .botMessage{
-  width:94%;
-  max-width:94%;
-  background:rgba(255,255,255,.58);
-  border:1px solid var(--border);
-  padding:8px 12px 18px;
+  background:var(--in-bubble);
+  border-top-left-radius:2px;
+  margin-right:auto;
 }
 
 .userMessage{
-  width:74%;
-  max-width:74%;
+  background:var(--out-bubble);
+  border-top-right-radius:2px;
   margin-left:auto;
-  background:linear-gradient(135deg,var(--blue),var(--blue2));
-  color:white;
-  font-size:14px;
-  line-height:1.3;
-  padding:10px 14px;
-  white-space:pre-wrap;
-}
-
-.messageText{
-  font-size:14px;
-  line-height:1.32;
-  color:#111827;
-  white-space:pre-wrap;
-  margin:0;
-  padding:0;
-}
-
-.botFooter{
-  position:absolute;
-  right:12px;
-  bottom:5px;
-  display:flex;
-  align-items:center;
-  justify-content:flex-end;
-  line-height:1;
 }
 
 .msgTime{
-  font-size:10px;
-  line-height:1;
-  color:#64748b;
-  font-weight:500;
+  display:block;
+  text-align:right;
+  font-size:11px;
+  color:var(--muted);
+  margin-top:2px;
 }
 
+/* ---------- Input bar ---------- */
 .inputPanel{
   position:fixed;
-  left:50%;
-  bottom:15px;
-  transform:translateX(-50%);
-  width:min(450px,calc(100vw - 24px));
-  padding:9px;
-  border-radius:24px;
-  background:rgba(255,255,255,.62);
-  backdrop-filter:blur(30px);
-  box-shadow:0 15px 35px rgba(0,0,0,.1);
+  left:0;right:0;bottom:0;
+  background:#F5F5F5;
+  border-top:1px solid #ddd;
+  padding:8px 8px;
   display:grid;
-  grid-template-columns:42px 1fr 42px 42px;
-  gap:8px;
+  grid-template-columns:40px 1fr 40px;
+  gap:6px;
   align-items:end;
   z-index:90;
 }
 
 textarea{
   width:100%;
-  min-height:40px;
-  max-height:110px;
+  min-height:38px;
+  max-height:100px;
   border:none;
+  border-radius:20px;
   outline:none;
-  background:transparent;
+  background:#fff;
   resize:none;
-  font-size:16px;
-  font-family:Arial,sans-serif;
-  padding:10px 2px;
-  color:#111827;
-}
-
-textarea::placeholder{
-  color:#64748b;
+  font-size:15px;
+  padding:9px 14px;
+  color:#111;
+  border:1px solid #e2e2e2;
 }
 
 button,.fileLabel{
-  width:42px;
-  height:42px;
-  border:none;
-  border-radius:15px;
+  width:40px;height:40px;
+  border:none;border-radius:50%;
   cursor:pointer;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:19px;
-  background:rgba(255,255,255,.72);
-  box-shadow:0 8px 20px rgba(0,0,0,.08);
-}
-
-button:disabled{
-  opacity:.55;
-  cursor:not-allowed;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;
+  background:transparent;
+  color:var(--tg-blue);
 }
 
 .sendBtn{
-  background:linear-gradient(135deg,#4b7cff,#699eff);
-  color:white;
+  background:var(--tg-blue);
+  color:#fff;
 }
 
-.micListening{
-  background:linear-gradient(135deg,#ff6b6b,#ff9f9f);
-  color:white;
-}
+button:disabled{opacity:.5;cursor:not-allowed;}
 
-input[type=file]{
-  display:none;
-}
+.micListening{background:#ff5555;color:#fff;}
 
-.status{
-  display:none;
-}
+input[type=file]{display:none;}
 
-.menuOverlay{
-  position:fixed;
-  inset:0;
-  background:rgba(15,23,42,.28);
-  backdrop-filter:blur(18px);
-  -webkit-backdrop-filter:blur(18px);
-  z-index:200;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  padding:22px;
-}
-
-.menuOverlay.open{
-  display:flex;
-}
-
-.menuCard{
-  width:100%;
-  max-width:420px;
-  border-radius:30px;
-  background:rgba(255,255,255,.78);
-  border:1px solid rgba(255,255,255,.45);
-  box-shadow:0 25px 70px rgba(31,58,95,.28);
-  padding:22px;
-}
-
-.menuTop{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:18px;
-}
-
-.menuTitle{
-  font-size:24px;
-  font-weight:800;
-}
-
-.menuSub{
-  font-size:14px;
-  color:#64748b;
-  margin-top:4px;
-}
-
-.closeBtn{
-  width:44px;
-  height:44px;
-  border-radius:16px;
-  font-size:26px;
-}
-
-.menuGrid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px;
-}
-
-.menuItem{
-  border-radius:22px;
-  background:rgba(255,255,255,.6);
-  border:1px solid rgba(255,255,255,.45);
-  padding:16px;
-  min-height:100px;
-  box-shadow:0 10px 25px rgba(0,0,0,.06);
-}
-
-.menuIcon{
-  font-size:24px;
-  margin-bottom:8px;
-}
-
-.menuName{
-  font-size:16px;
-  font-weight:800;
-}
-
-.menuDesc{
+.typing{
   font-size:13px;
-  color:#64748b;
-  margin-top:4px;
+  color:var(--muted);
+  padding:2px 10px 6px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="header">
-  <div>
-    <div class="logoTitle">TOBI</div>
-    <div class="logoSub">Личный помощник</div>
+<div class="gate" id="gate">
+  <div class="gateCard">
+    <img src="./tobi-robot.jpg" alt="Tobi">
+    <h1>Tobi</h1>
+    <p>Введи код доступа, чтобы продолжить</p>
+    <div class="gateError" id="gateError">Неверный код доступа.</div>
+    <input type="password" id="gateToken" placeholder="Код доступа" autocomplete="off">
+    <button onclick="submitToken()">Войти</button>
   </div>
+</div>
 
-  <div class="robot">
-    <img src="./tobi-robot.jpg?v=14" alt="TOBI Robot">
+<div class="header">
+  <div class="headerAvatar"><img src="./tobi-robot.jpg" alt="Tobi"></div>
+  <div class="headerInfo">
+    <div class="headerName">Tobi</div>
+    <div class="headerStatus" id="headerStatus">в сети</div>
   </div>
 </div>
 
 <div class="app">
   <div class="chat" id="chat"></div>
+  <div class="typing" id="typing" style="display:none;">Tobi печатает...</div>
 </div>
 
 <div class="inputPanel">
@@ -361,701 +269,203 @@ input[type=file]{
     <input type="file" id="fileInput" accept=".txt,text/plain" onchange="handleFile()"/>
   </label>
 
-  <textarea id="userText" placeholder="Введите запрос..."></textarea>
+  <textarea id="userText" placeholder="Сообщение"></textarea>
 
-  <button id="voiceBtn" onclick="startVoice()">🎙</button>
   <button id="sendBtn" class="sendBtn" onclick="sendText()">➤</button>
 </div>
 
-<div class="status" id="status">Готово.</div>
-
-<div class="menuOverlay" id="menuOverlay">
-  <div class="menuCard">
-    <div class="menuTop">
-      <div>
-        <div class="menuTitle">TOBI Center</div>
-        <div class="menuSub">Закрытый центр управления</div>
-      </div>
-      <button class="closeBtn" onclick="toggleMenu()">×</button>
-    </div>
-
-    <div class="menuGrid">
-      <div class="menuItem">
-        <div class="menuIcon">🧠</div>
-        <div class="menuName">Память</div>
-        <div class="menuDesc">Факты и правила</div>
-      </div>
-
-      <div class="menuItem">
-        <div class="menuIcon">📄</div>
-        <div class="menuName">Документы</div>
-        <div class="menuDesc">TXT PDF DOCX</div>
-      </div>
-
-      <div class="menuItem">
-        <div class="menuIcon">📅</div>
-        <div class="menuName">Планирование</div>
-        <div class="menuDesc">Календарь и дела</div>
-      </div>
-
-      <div class="menuItem">
-        <div class="menuIcon">📊</div>
-        <div class="menuName">Аналитика</div>
-        <div class="menuDesc">Отчёты и статистика</div>
-      </div>
-
-      <div class="menuItem">
-        <div class="menuIcon">🗂</div>
-        <div class="menuName">Кейсы</div>
-        <div class="menuDesc">Активные проекты</div>
-      </div>
-
-      <div class="menuItem">
-        <div class="menuIcon">⚙️</div>
-        <div class="menuName">Настройки</div>
-        <div class="menuDesc">Связки и сервисы</div>
-      </div>
-    </div>
-  </div>
-</div>
-
 <script>
-const MAKE_WEBHOOK_URL = "https://hook.us2.make.com/ieuyswwsxlrom238xqom6wuun9mgd47i";
-const TOBI_STORAGE_KEY = "tobi_chat_history_v4";
-const TOBI_LAST_DOCUMENT_KEY = "tobi_last_document_v1";
-
-const START_MESSAGE = `Сергей, я готов.
-
-Скажи голосом, напиши текстом или прикрепи TXT-файл.
-
-Пример:
-«Тоби, подведи итог дня»
-«Разбери ответ пристава»
-«Сделай текст запроса в Сбербанк»`;
+const API_BASE = "https://sergey-tobi.duckdns.org";
+const TOKEN_KEY = "tobi_web_token";
+const STORAGE_KEY = "tobi_chat_history_v5";
+const CLIENT_ID_KEY = "tobi_client_id";
 
 let chatHistory = [];
 let isSending = false;
-let isListening = false;
-let lastSentText = "";
-let lastSentAt = 0;
-let lastDocumentText = "";
+let tobiToken = localStorage.getItem(TOKEN_KEY) || "";
 
-function saveLastDocument(text){
-  lastDocumentText = String(text || "").trim();
-
-  try{
-    localStorage.setItem(TOBI_LAST_DOCUMENT_KEY,lastDocumentText);
-  }catch(e){
-    console.error("Ошибка сохранения последнего документа:",e);
+function getClientId(){
+  let id = localStorage.getItem(CLIENT_ID_KEY);
+  if(!id){
+    id = "web-" + Math.random().toString(36).slice(2) + Date.now();
+    localStorage.setItem(CLIENT_ID_KEY, id);
   }
-}
-
-function loadLastDocument(){
-  try{
-    lastDocumentText = localStorage.getItem(TOBI_LAST_DOCUMENT_KEY) || "";
-  }catch(e){
-    console.error("Ошибка загрузки последнего документа:",e);
-    lastDocumentText = "";
-  }
-}
-
-function buildContextForMake(currentText){
-  const lastMessages = chatHistory
-    .slice(-10)
-    .map(item => {
-      const role = item.role === "user" ? "Сергей" : "TOBI";
-      return role + ": " + item.text;
-    })
-    .join("\n\n");
-
-  return `Последние сообщения в чате:
-
-${lastMessages}
-
-Текущий запрос Сергея:
-${currentText}`;
-}
-
-function toggleMenu(){
-  document.getElementById("menuOverlay").classList.toggle("open");
-}
-
-function openMenu(){
-  document.getElementById("menuOverlay").classList.add("open");
-}
-
-function closeMenu(){
-  document.getElementById("menuOverlay").classList.remove("open");
+  return id;
 }
 
 function getTime(date = new Date()){
   return date.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});
 }
 
-function setStatus(text){
-  document.getElementById("status").innerText = text;
-}
-
-function setSendingState(value){
-  isSending = value;
-  const sendBtn = document.getElementById("sendBtn");
-  if(sendBtn) sendBtn.disabled = value;
-}
-
 function escapeHtml(text){
-  return String(text)
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;");
-}
-
-function normalizeCommand(text){
-  return String(text || "")
-    .toLowerCase()
-    .replace(/ё/g,"е")
-    .replace(/[.,!?;:]/g,"")
-    .replace(/\s+/g," ")
-    .trim();
-}
-
-function createMessage(role,text){
-  return {
-    role: role,
-    text: String(text || ""),
-    time: getTime(),
-    createdAt: new Date().toISOString()
-  };
+  return String(text).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 }
 
 function saveMessages(){
-  try{
-    localStorage.setItem(TOBI_STORAGE_KEY,JSON.stringify(chatHistory));
-  }catch(e){
-    console.error("Ошибка сохранения истории:",e);
-  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(chatHistory));
 }
 
 function loadMessages(){
   try{
-    const saved = localStorage.getItem(TOBI_STORAGE_KEY);
-    const parsed = saved ? JSON.parse(saved) : [];
-
-    if(Array.isArray(parsed)){
-      chatHistory = parsed.filter(item =>
-        item &&
-        typeof item.text === "string" &&
-        (item.role === "user" || item.role === "bot")
-      );
-    }
+    const saved = localStorage.getItem(STORAGE_KEY);
+    chatHistory = saved ? JSON.parse(saved) : [];
   }catch(e){
-    console.error("Ошибка загрузки истории:",e);
     chatHistory = [];
   }
-
   if(!chatHistory.length){
-    chatHistory = [createMessage("bot",START_MESSAGE)];
+    chatHistory = [{role:"bot", text:"Привет! Я Tobi. Пиши, что нужно.", time:getTime()}];
     saveMessages();
   }
-
   renderChat();
-  scrollChatToBottom(false);
-}
-
-function clearChatHistory(){
-  chatHistory = [createMessage("bot",START_MESSAGE)];
-  saveMessages();
-  renderChat();
-  scrollChatToBottom(false);
-}
-
-function getMessageTime(message){
-  if(message.time) return message.time;
-
-  if(message.createdAt){
-    const d = new Date(message.createdAt);
-    if(!isNaN(d.getTime())) return getTime(d);
-  }
-
-  return getTime();
-}
-
-function renderMessage(message){
-  const chat = document.getElementById("chat");
-  const div = document.createElement("div");
-
-  if(message.role === "user"){
-    div.className = "message userMessage";
-    div.innerText = message.text;
-  }else{
-    div.className = "message botMessage";
-    div.innerHTML =
-      '<div class="messageText">' + escapeHtml(message.text) + '</div>' +
-      '<div class="botFooter"><span class="msgTime">' + getMessageTime(message) + '</span></div>';
-  }
-
-  chat.appendChild(div);
-  return div;
 }
 
 function renderChat(){
   const chat = document.getElementById("chat");
   chat.innerHTML = "";
-
-  chatHistory.forEach(message => {
-    renderMessage(message);
-  });
+  chatHistory.forEach(renderMessage);
+  scrollToBottom();
 }
 
-function addMessage(role,text){
-  const safeText = role === "bot" ? cleanAnswer(text) : String(text || "").trim();
-
-  if(!safeText) return null;
-
-  const message = createMessage(role,safeText);
-  chatHistory.push(message);
-  saveMessages();
-
-  const element = renderMessage(message);
-
-  if(role === "bot"){
-    scrollToMessageTop(element);
-  }else{
-    scrollToMessageCenter(element);
-  }
-
-  return message;
-}
-
-function addUserMessage(text){
-  return addMessage("user",text);
-}
-
-function addBotMessage(text){
-  return addMessage("bot",text);
-}
-
-function scrollToMessageTop(element){
-  setTimeout(()=>{
-    element.scrollIntoView({
-      behavior:"smooth",
-      block:"start"
-    });
-  },80);
-}
-
-function scrollToMessageCenter(element){
-  setTimeout(()=>{
-    element.scrollIntoView({
-      behavior:"smooth",
-      block:"center"
-    });
-  },80);
-}
-
-function scrollChatToBottom(smooth = true){
+function renderMessage(m){
   const chat = document.getElementById("chat");
-
-  setTimeout(()=>{
-    chat.scrollTo({
-      top: chat.scrollHeight,
-      behavior: smooth ? "smooth" : "auto"
-    });
-  },80);
+  const div = document.createElement("div");
+  div.className = "message " + (m.role === "user" ? "userMessage" : "botMessage");
+  div.innerHTML = escapeHtml(m.text).replace(/\n/g,"<br>") + '<span class="msgTime">' + (m.time || getTime()) + '</span>';
+  chat.appendChild(div);
+  return div;
 }
 
-function cleanAnswer(value){
-  if(value === null || value === undefined) return "";
-
-  let text = String(value).trim();
-
-  for(let i = 0; i < 7; i++){
-    try{
-      const parsed = JSON.parse(text);
-
-      if(typeof parsed === "string"){
-        text = parsed.trim();
-        continue;
-      }
-
-      if(Array.isArray(parsed)){
-        return parsed.map(item => cleanAnswer(item)).join("\n").trim();
-      }
-
-      if(parsed && typeof parsed === "object"){
-        const keys = ["answer","response","text","result","message","output","content"];
-
-        for(const key of keys){
-          if(parsed[key] !== undefined){
-            return cleanAnswer(parsed[key]);
-          }
-        }
-
-        return JSON.stringify(parsed,null,2);
-      }
-
-      return String(parsed).trim();
-
-    }catch(e){
-      break;
-    }
-  }
-
-  text = text
-    .replace(/^\s*\{\s*["'](?:answer|response|text|result|message|output|content)["']\s*:\s*/i,"")
-    .replace(/^["']|["']$/g,"")
-    .replace(/["']?\s*\}\s*$/,"")
-    .replace(/\\r\\n/g,"\n")
-    .replace(/\\n/g,"\n")
-    .replace(/\\t/g,"\t")
-    .replace(/\\"/g,'"')
-    .replace(/\\\\/g,"\\");
-
-  return text.trim();
+function addMessage(role, text){
+  const m = {role, text: String(text||"").trim(), time:getTime()};
+  if(!m.text) return;
+  chatHistory.push(m);
+  saveMessages();
+  renderMessage(m);
+  scrollToBottom();
 }
 
-function isMenuCommand(text){
-  const t = normalizeCommand(text);
-
-  return (
-    t === "открой" ||
-    t === "открой меню" ||
-    t === "открыть меню" ||
-    t === "открой центр" ||
-    t === "центр управления" ||
-    t === "открой центр управления" ||
-    t === "открыть центр управления" ||
-    t === "тоби открой" ||
-    t === "тоби открой меню" ||
-    t === "тоби открыть меню" ||
-    t === "тоби меню" ||
-    t === "тоби открой центр управления"
-  );
+function scrollToBottom(){
+  const chat = document.getElementById("chat");
+  setTimeout(()=>{ chat.scrollTop = chat.scrollHeight; }, 50);
 }
 
-function isClearCommand(text){
-  const t = normalizeCommand(text);
-
-  return (
-    t === "очисти чат" ||
-    t === "очистить чат" ||
-    t === "сбрось чат" ||
-    t === "новый чат" ||
-    t === "тоби очисти чат" ||
-    t === "тоби новый чат"
-  );
-}
-
-function shouldBlockDuplicate(text){
-  const normalized = normalizeCommand(text);
-  const now = Date.now();
-
-  if(normalized && normalized === lastSentText && now - lastSentAt < 1500){
-    return true;
-  }
-
-  lastSentText = normalized;
-  lastSentAt = now;
-  return false;
-}
-
-async function sendText(textFromVoice = null){
-  if(isSending) return;
-
-  const input = document.getElementById("userText");
-  const text = String(textFromVoice !== null ? textFromVoice : input.value).trim();
-
-  if(!text){
-    addBotMessage("Напиши задачу.");
-    return;
-  }
-
-  if(shouldBlockDuplicate(text)) return;
-
-  addUserMessage(text);
-
-  input.value = "";
-  autoResizeInput();
-
-  if(isClearCommand(text)){
-    clearChatHistory();
-    addBotMessage("Чат очищен. Начинаем заново.");
-    return;
-  }
-
-  if(isMenuCommand(text)){
-    openMenu();
-    addBotMessage("Центр управления открыт.");
-    return;
-  }
-
-  setStatus("TOBI думает...");
-  setSendingState(true);
-
-  try{
-    const res = await fetch(MAKE_WEBHOOK_URL,{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json"
-      },
-      body:JSON.stringify({
-        type:"text",
-        text:text,
-        context:buildContextForMake(text),
-        lastDocument:lastDocumentText
-      })
-    });
-
-    const raw = await res.text();
-
-    if(!res.ok){
-      addBotMessage("Ошибка Make. Статус: " + res.status + "\n\n" + raw);
-      setStatus("Ошибка.");
-      return;
-    }
-
-    const answer = cleanAnswer(raw) || "Ответ получен, но текст пустой.";
-
-    addBotMessage(answer);
-    setStatus("Готово.");
-
-  }catch(e){
-    addBotMessage("Ошибка соединения:\n\n" + e.message);
-    setStatus("Ошибка.");
-  }finally{
-    setSendingState(false);
-  }
-}
-
-function startVoice(){
-  if(isListening || isSending) return;
-
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-  if(!SpeechRecognition){
-    addBotMessage("Голосовой ввод поддерживается через Chrome.");
-    return;
-  }
-
-  const voiceBtn = document.getElementById("voiceBtn");
-  const input = document.getElementById("userText");
-
-  const recognition = new SpeechRecognition();
-  recognition.lang = "ru-RU";
-  recognition.interimResults = true;
-  recognition.continuous = false;
-  recognition.maxAlternatives = 1;
-
-  let finalTranscript = "";
-  let bestTranscript = "";
-  let voiceSent = false;
-
-  isListening = true;
-  setStatus("Говори...");
-  voiceBtn.classList.add("micListening");
-
-  recognition.start();
-
-  recognition.onresult = function(event){
-    let interimTranscript = "";
-
-    for(let i = event.resultIndex; i < event.results.length; i++){
-      const transcript = event.results[i][0].transcript.trim();
-
-      if(event.results[i].isFinal){
-        finalTranscript += " " + transcript;
-      }else{
-        interimTranscript += " " + transcript;
-      }
-    }
-
-    bestTranscript = (finalTranscript || interimTranscript).trim();
-
-    if(bestTranscript){
-      input.value = bestTranscript;
-      autoResizeInput();
-    }
-  };
-
-  recognition.onerror = function(){
-    setStatus("Ошибка голосового ввода.");
-  };
-
-  recognition.onend = function(){
-    isListening = false;
-    voiceBtn.classList.remove("micListening");
-
-    const text = (finalTranscript || bestTranscript).trim();
-
-    if(!text){
-      setStatus("Голос не распознан.");
-      return;
-    }
-
-    if(voiceSent) return;
-    voiceSent = true;
-
-    setStatus("Голос распознан.");
-    sendText(text);
-  };
-}
-
-async function handleFile(){
-  if(isSending) return;
-
-  const fileInput = document.getElementById("fileInput");
-  const file = fileInput.files[0];
-  const userTextInput = document.getElementById("userText");
-  const userText = userTextInput.value.trim();
-
-  if(!file) return;
-
-  const fileName = file.name || "";
-  const isTxt = fileName.toLowerCase().endsWith(".txt") || file.type === "text/plain";
-
-  if(!isTxt){
-    addBotMessage(`Сергей, пока я безопасно читаю только TXT-файлы.
-
-Вы выбрали:
-${fileName}
-
-DOCX, PDF и фото подключим следующим шагом отдельно.`);
-    setStatus("Пока доступен TXT.");
-    fileInput.value = "";
-    return;
-  }
-
-  const maxSize = 1024 * 1024;
-
-  if(file.size > maxSize){
-    addBotMessage(`Файл слишком большой:
-
-${fileName}
-
-Пока загружайте TXT-файл меньше 1 МБ.`);
-    setStatus("Файл слишком большой.");
-    fileInput.value = "";
-    return;
-  }
-
-  const visibleUserMessage = userText
-    ? `${userText}
-
-📎 Файл: ${fileName}`
-    : "📎 Файл: " + fileName;
-
-  addUserMessage(visibleUserMessage);
-
-  userTextInput.value = "";
-  autoResizeInput();
-
-  setStatus("TOBI читает TXT-файл...");
-
-  const reader = new FileReader();
-
-  reader.onload = async function(event){
-    const fileText = String(event.target.result || "").trim();
-
-    saveLastDocument(fileText);
-
-    if(!fileText){
-      addBotMessage(`Файл прочитан, но внутри нет текста:
-
-${fileName}`);
-      setStatus("Файл пустой.");
-      fileInput.value = "";
-      return;
-    }
-
-    const task = userText || "Проанализируй текст из файла и дай короткий понятный вывод.";
-
-    const textForTobi = `Пользователь прикрепил TXT-файл.
-
-Имя файла: ${fileName}
-
-Задача пользователя:
-${task}
-
-Точное содержимое файла между метками:
-
---- НАЧАЛО ФАЙЛА ---
-${fileText}
---- КОНЕЦ ФАЙЛА ---
-
-Ответь коротко и по делу.
-Анализируй только текст между метками.
-Не придумывай то, чего нет в тексте.
-Не говори про кодировки, BOM, XML, архивы, форматы и техническое устройство файла.`;
-
-    try{
-      setStatus("TOBI думает...");
-      setSendingState(true);
-
-      const res = await fetch(MAKE_WEBHOOK_URL,{
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json"
-        },
-        body:JSON.stringify({
-          type:"text",
-          text:textForTobi,
-          context:buildContextForMake(textForTobi),
-          lastDocument:fileText
-        })
-      });
-
-      const raw = await res.text();
-
-      if(!res.ok){
-        addBotMessage("Ошибка Make при отправке текста из файла. Статус: " + res.status + "\n\n" + raw);
-        setStatus("Ошибка файла.");
-        fileInput.value = "";
-        return;
-      }
-
-      const answer = cleanAnswer(raw) || "Файл отправлен, но ответ пустой.";
-
-      addBotMessage(answer);
-      setStatus("Файл обработан.");
-      fileInput.value = "";
-
-    }catch(e){
-      addBotMessage("Ошибка соединения с Make при отправке файла:\n\n" + e.message);
-      setStatus("Ошибка файла.");
-      fileInput.value = "";
-    }finally{
-      setSendingState(false);
-    }
-  };
-
-  reader.onerror = function(){
-    addBotMessage("Не удалось прочитать TXT-файл. Попробуйте другой файл.");
-    setStatus("Ошибка чтения файла.");
-    fileInput.value = "";
-  };
-
-  reader.readAsText(file,"UTF-8");
+function setSending(value){
+  isSending = value;
+  document.getElementById("sendBtn").disabled = value;
+  document.getElementById("typing").style.display = value ? "block" : "none";
+  if(value) scrollToBottom();
 }
 
 function autoResizeInput(){
-  const textarea = document.getElementById("userText");
-  textarea.style.height = "40px";
-  textarea.style.height = Math.min(textarea.scrollHeight,110) + "px";
+  const t = document.getElementById("userText");
+  t.style.height = "38px";
+  t.style.height = Math.min(t.scrollHeight,100) + "px";
 }
 
-document.addEventListener("DOMContentLoaded",function(){
+async function callTobi(message){
+  const res = await fetch(API_BASE + "/api/chat", {
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "x-tobi-token": tobiToken
+    },
+    body: JSON.stringify({ message, clientId: getClientId() })
+  });
+
+  if(res.status === 401){
+    localStorage.removeItem(TOKEN_KEY);
+    location.reload();
+    return null;
+  }
+
+  if(!res.ok){
+    throw new Error("Ошибка сервера: " + res.status);
+  }
+
+  const data = await res.json();
+  return data.answer;
+}
+
+async function sendText(voiceText){
+  if(isSending) return;
+  const input = document.getElementById("userText");
+  const text = String(voiceText !== undefined ? voiceText : input.value).trim();
+  if(!text) return;
+
+  addMessage("user", text);
+  input.value = "";
+  autoResizeInput();
+
+  setSending(true);
+  try{
+    const answer = await callTobi(text);
+    if(answer !== null) addMessage("bot", answer || "Пустой ответ.");
+  }catch(e){
+    addMessage("bot", "Ошибка соединения: " + e.message);
+  }finally{
+    setSending(false);
+  }
+}
+
+async function handleFile(){
+  const fileInput = document.getElementById("fileInput");
+  const file = fileInput.files[0];
+  if(!file) return;
+
+  const isTxt = file.name.toLowerCase().endsWith(".txt") || file.type === "text/plain";
+  if(!isTxt){
+    addMessage("bot", "Пока читаю только TXT-файлы.");
+    fileInput.value = "";
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const fileText = String(e.target.result || "").trim();
+    addMessage("user", "📎 Файл: " + file.name);
+    setSending(true);
+    try{
+      const answer = await callTobi(
+        `Прикреплён файл ${file.name}. Содержимое:\n\n${fileText}\n\nПроанализируй и дай короткий вывод.`
+      );
+      if(answer !== null) addMessage("bot", answer);
+    }catch(err){
+      addMessage("bot", "Ошибка при отправке файла: " + err.message);
+    }finally{
+      setSending(false);
+      fileInput.value = "";
+    }
+  };
+  reader.readAsText(file, "UTF-8");
+}
+
+function submitToken(){
+  const val = document.getElementById("gateToken").value.trim();
+  if(!val){ return; }
+  tobiToken = val;
+  localStorage.setItem(TOKEN_KEY, val);
+  document.getElementById("gate").classList.add("hidden");
   loadMessages();
-  loadLastDocument();
+}
 
+document.addEventListener("DOMContentLoaded", () => {
   const userText = document.getElementById("userText");
-
-  userText.addEventListener("input",autoResizeInput);
-
-  userText.addEventListener("keydown",function(event){
-    if(event.key === "Enter" && !event.shiftKey){
-      event.preventDefault();
+  userText.addEventListener("input", autoResizeInput);
+  userText.addEventListener("keydown", (e) => {
+    if(e.key === "Enter" && !e.shiftKey){
+      e.preventDefault();
       sendText();
     }
   });
+
+  document.getElementById("gateToken").addEventListener("keydown", (e) => {
+    if(e.key === "Enter") submitToken();
+  });
+
+  if(tobiToken){
+    document.getElementById("gate").classList.add("hidden");
+    loadMessages();
+  }
 });
 </script>
 
